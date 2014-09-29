@@ -1,3 +1,12 @@
+/*
+Author: John Foley
+URL: thisfoley.ninja
+Template by: Dr. Bob Matthews
+
+Date: 9.25.14
+Last Edit: 9.25.14
+*/
+
 #include "keywordtoken.h"
 
 /* Create a new token with no attributes. */

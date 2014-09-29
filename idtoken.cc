@@ -1,3 +1,11 @@
+/*
+Author: John Foley
+URL: thisfoley.ninja
+
+Date: 9.25.14
+Last Edit: 9.25.14
+*/
+
 #include "idtoken.h"
 
 /* The constructor for the ID Token.  We call the base class constructor here.  

@@ -17,33 +17,39 @@ token.o : token.cc token.h
 keywordtoken.o : keywordtoken.h keywordtoken.cc token.h
 	g++ $(FLAGS) keywordtoken.h keywordtoken.cc token.h
 
-punctoken.o : punctoken.h punctoken.cc token.o
-	g++ $(FLAGS) punctoken.h punctoken.cc token.o
+punctoken.o : punctoken.h punctoken.cc token.h
+	g++ $(FLAGS) punctoken.h punctoken.cc token.h
 
-reloptoken.o : reloptoken.h reloptoken.cc token.o
-	g++ $(FLAGS) reloptoken.h reloptoken.cc token.o
+reloptoken.o : reloptoken.h reloptoken.cc token.h
+	g++ $(FLAGS) reloptoken.h reloptoken.cc token.h
 
-addoptoken.o : addoptoken.h addoptoken.cc token.o
-	g++ $(FLAGS) addoptoken.h addoptoken.cc token.o
+addoptoken.o : addoptoken.h addoptoken.cc token.h
+	g++ $(FLAGS) addoptoken.h addoptoken.cc token.h
 
-muloptoken.o : muloptoken.h muloptoken.cc token.o
-	g++ $(FLAGS) muloptoken.h muloptoken.cc token.o
+muloptoken.o : muloptoken.h muloptoken.cc token.h
+	g++ $(FLAGS) muloptoken.h muloptoken.cc token.h
 
-idtoken.o : idtoken.h idtoken.cc token.o
-	g++ $(FLAGS) idtoken.h idtoken.h token.o
+idtoken.o : idtoken.h idtoken.cc token.h
+	g++ $(FLAGS) idtoken.h idtoken.cc token.h
 
-numtoken.o : numtoken.h numtoken.cc token.o
-	g++ $(FLAGS) numtoken.h numtoken.h token.o
+numtoken.o : numtoken.h numtoken.cc token.h
+	g++ $(FLAGS) numtoken.h numtoken.cc token.h
 
-eoftoken.o : eoftoken.h eoftoken.cc token.o
-	g++ $(FLAGS) eoftoken.h eoftoken.h token.o
+eoftoken.o : eoftoken.h eoftoken.cc token.h
+	g++ $(FLAGS) eoftoken.h eoftoken.h token.h
 
 buffer.o : buffer.h buffer.cc
 	g++ $(FLAGS) buffer.h buffer.cc
 
+test_scanner : test_scanner.cc scanner.o
+	g++ -o main test_scanner.cc buffer.o
+
 scanner.o : scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o\
 		numtoken.o eoftoken.o buffer.o
-	g++ $(FLAGS) scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
-		reloptoken.o addoptoken.o muloptoken.o idtoken.o\
-		numtoken.o eoftoken.o buffer.o 
+	g++ $(FLAGS) scanner.h scanner.cc token.h keywordtoken.h punctoken.h\
+		reloptoken.h addoptoken.h muloptoken.h idtoken.h\
+		numtoken.h eoftoken.h buffer.h 
+
+all : test_scanner.cc scanner.o buffer.o
+	g++ -o main test_scanner.cc scanner.o buffer.o

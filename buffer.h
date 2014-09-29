@@ -1,3 +1,11 @@
+/*
+Author: John Foley
+URL: thisfoley.ninja
+
+Date: 9.25.14
+Last Edit: 9.25.14
+*/
+
 #ifndef BUFFER_H
 #define BUFFER_H
 
@@ -41,8 +49,7 @@ class Buffer
   // Put a character back at the front of the buffer.
   void unread_char (char c);
   
-  
- private:
+ private:  
   // Storage for the buffer
   list<char> *b;
   

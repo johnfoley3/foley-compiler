@@ -1,3 +1,11 @@
+/*
+Author: John Foley
+URL: thisfoley.ninja
+
+Date: 9.25.14
+Last Edit: 9.25.14
+*/
+
 #include "addoptoken.h"
 
 /* Create a new token with no attributes. */

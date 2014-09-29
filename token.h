@@ -1,3 +1,12 @@
+/*
+Author: John Foley
+URL: thisfoley.ninja
+Template by: Dr. Bob Matthews
+
+Date: 9.25.14
+Last Edit: 9.25.14
+*/
+
 /* This is a multiple include guard.  This prevents the programmer
    from inadvertently including a header more than once.  All of your
    header files should include an ifndef..define..endif include guard.

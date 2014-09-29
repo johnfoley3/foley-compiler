@@ -1,3 +1,11 @@
+/*
+Author: John Foley
+URL: thisfoley.ninja
+
+Date: 9.25.14
+Last Edit: 9.25.14
+*/
+
 #ifndef PUNCTOKEN_H
 #define PUNCTOKEN_H
 
@@ -11,7 +19,8 @@ typedef enum punc_attr { PUNC_SEMI  	= 200,
 			 PUNC_COMMA 	= 202,
 			 PUNC_ASSIGN 	= 203,
 			 PUNC_OPEN	= 204,
-			 PUNC_CLOSE  	= 205 } punc_attr_type;		 
+			 PUNC_CLOSE  	= 205,
+			 PUNC_NO_ATTR	= 299 } punc_attr_type;		 
 
 // All token classes are subclasses of Token
 class PuncToken : public Token
