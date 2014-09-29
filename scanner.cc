@@ -18,7 +18,24 @@ Scanner::~Scanner() {
 
 Token *Scanner::next_token() {
 
-	cout << "from next_token" << endl;
+	int state = 0;
+	string *attr = new string();
+
+	while (!done) {
+
+		char c = buf->next_char();
+		
+		switch (state) {
+			
+			case 0:
+				if (c == 'p') {
+					state = 1;
+					break;
+				}
+
+		}
+	}
+
 	return new IdToken();
 }
 
