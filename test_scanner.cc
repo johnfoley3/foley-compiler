@@ -13,6 +13,7 @@ int main( int argc , char *argv[] ) {
 	char *filename = (char *) argv[1];
 
 	Scanner *scan = new Scanner( filename );
+	scan->next_token();
 
 	return 0;
 }

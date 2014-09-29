@@ -16,12 +16,13 @@ Scanner::~Scanner() {
 	delete buf;
 }
 
-Token *next_token() {
-`
+Token *Scanner::next_token() {
+
 	cout << "from next_token" << endl;
+	return new IdToken();
 }
 
-void scanner_fatal_error() {
+void Scanner::scanner_fatal_error() {
 
 	// My attempt to be funny at 2 in the morning	
 	cout << "Uh oh. Scanner ran into a fatel problem. Goodluck." << endl;

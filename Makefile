@@ -5,7 +5,9 @@
 FLAGS = -c
 
 # one command to rule them all
-all : 
+all : test_scanner.cc scanner.o buffer.o
+	g++ -o main test_scanner.cc scanner.o buffer.o token.o keywordtoken.o punctoken.o\
+		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
 
 # clean out all object files
 clean : 
@@ -36,7 +38,7 @@ numtoken.o : numtoken.h numtoken.cc token.h
 	g++ $(FLAGS) numtoken.h numtoken.cc token.h
 
 eoftoken.o : eoftoken.h eoftoken.cc token.h
-	g++ $(FLAGS) eoftoken.h eoftoken.h token.h
+	g++ $(FLAGS) eoftoken.h eoftoken.cc token.h
 
 buffer.o : buffer.h buffer.cc
 	g++ $(FLAGS) buffer.h buffer.cc
@@ -51,5 +53,3 @@ scanner.o : scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
 		reloptoken.h addoptoken.h muloptoken.h idtoken.h\
 		numtoken.h eoftoken.h buffer.h 
 
-all : test_scanner.cc scanner.o buffer.o
-	g++ -o main test_scanner.cc scanner.o buffer.o
