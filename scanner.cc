@@ -35,15 +35,24 @@ Token *Scanner::next_token() {
 				// check for every initial transition
 				if (c == 'p') {
 
-					// go to state for 'pr'
+					// go to state for 'p'
 					state = 1;
 					*attr += c;
 				} else if (c == 'n') {
-					
+
+					// go to state for 'n'
+					state = 18;
+					*attr += c;
 				} else if (c == 'i') {
 					
+					// go to state for 'i'
+					state = 21;
+					*attr += c;
 				} else if (c == 'b') {
 					
+					// go to state for 'b'
+					state = 25;
+					*attr += c;
 				} else if (c == 't') {
 					
 				} else if (c == 'e') {
@@ -562,6 +571,421 @@ Token *Scanner::next_token() {
 				}
 
 				break;
+
+			case 18: 
+		
+				if (c == 'o') {
+
+					// 'no'
+					state = 19;
+					*attr += c;
+				} else if ( is_alphanumeric(c) ) {
+
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c) ) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+
+					scanner_fatal_error();
+					exit(0);
+				}
+
+				break;
+
+
+
+			case 19: 
+		
+				if (c == 't') {
+
+					// 'not'
+					state = 20;
+					*attr += c;
+				} else if ( is_alphanumeric(c) ) {
+
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c) ) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+
+					scanner_fatal_error();
+					exit(0);
+				}
+
+				break;
+				
+			case 20:
+
+                                if ( is_alphanumeric(c) ) {
+
+                                        state = 8;
+                                         *attr += c;
+                                } else if (c == ' ') {
+
+                                        // We found not!
+                                        token = new KeywordToken(KW_NOT);
+                                        done = true;
+                                } else if ( is_symbol(c) ) {
+
+                                        token = new KeywordToken(KW_NOT);
+                                        done = true;
+                                        buf->unread_char(c);
+                                } else {
+
+                                        scanner_fatal_error();
+                                        exit(0);
+                                }
+
+                                break;
+
+			case 21:
+
+				if (c == 'n') {
+
+					// 'in'
+					state = 22;
+					 *attr += c;	
+				} else if (c == 'f') {
+
+					// 'if'
+					state = 24;
+					*attr += c;
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+
+			case 22:
+
+				if (c == 't') {
+
+					// 'int'
+					state = 23;
+					 *attr += c;	
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+			case 23:
+
+                                if ( is_alphanumeric(c) ) {
+
+                                        state = 8;
+                                         *attr += c;
+                                } else if (c == ' ') {
+
+                                        // We found int!
+                                        token = new KeywordToken(KW_INT);
+                                        done = true;
+                                } else if ( is_symbol(c) ) {
+
+                                        token = new KeywordToken(KW_INT);
+                                        done = true;
+                                        buf->unread_char(c);
+                                } else {
+
+                                        scanner_fatal_error();
+                                        exit(0);
+                                }
+
+                                break;
+
+			case 24:
+
+                                if ( is_alphanumeric(c) ) {
+
+                                        state = 8;
+                                         *attr += c;
+                                } else if (c == ' ') {
+
+                                        // We found if!
+                                        token = new KeywordToken(KW_IF);
+                                        done = true;
+                                } else if ( is_symbol(c) ) {
+
+                                        token = new KeywordToken(KW_IF);
+                                        done = true;
+                                        buf->unread_char(c);
+                                } else {
+
+                                        scanner_fatal_error();
+                                        exit(0);
+                                }
+
+                                break;
+
+
+			case 25:
+
+				if (c == 'o') {
+
+					// 'bo'
+					state = 26;
+					 *attr += c;	
+				} else if (c == 'e') {
+
+					// 'be'
+					state = 29;
+					*attr += c;
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+			case 26:
+
+				if (c == 'o') {
+
+					// 'boo'
+					state = 27;
+					 *attr += c;	
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+			case 27:
+
+				if (c == 'l') {
+
+					// 'bool'
+					state = 28;
+					 *attr += c;	
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+			case 28:
+
+                                if ( is_alphanumeric(c) ) {
+
+                                        state = 8;
+                                         *attr += c;
+                                } else if (c == ' ') {
+
+                                        // We found bool!
+                                        token = new KeywordToken(KW_BOOL);
+                                        done = true;
+                                } else if ( is_symbol(c) ) {
+
+                                        token = new KeywordToken(KW_BOOL);
+                                        done = true;
+                                        buf->unread_char(c);
+                                } else {
+
+                                        scanner_fatal_error();
+                                        exit(0);
+                                }
+
+                                break;
+
+			case 29:
+
+				if (c == 'g') {
+
+					// 'beg'
+					state = 30;
+					 *attr += c;	
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+			case 30:
+
+				if (c == 'i') {
+
+					// 'begi'
+					state = 31;
+					 *attr += c;	
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+			case 31:
+
+				if (c == 'n') {
+
+					// 'begin'
+					state = 32;
+					 *attr += c;	
+				} else if ( is_alphanumeric(c) ) {
+					
+					// we have a possible identifier on our hands
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c)) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+		
+					scanner_fatal_error();
+					exit(0);
+				}
+				break;
+
+			case 32:
+
+                                if ( is_alphanumeric(c) ) {
+
+                                        state = 8;
+                                         *attr += c;
+                                } else if (c == ' ') {
+
+                                        // We found begin!
+                                        token = new KeywordToken(KW_BEGIN);
+                                        done = true;
+                                } else if ( is_symbol(c) ) {
+
+                                        token = new KeywordToken(KW_BEGIN);
+                                        done = true;
+                                        buf->unread_char(c);
+                                } else {
+
+                                        scanner_fatal_error();
+                                        exit(0);
+                                }
+
+                                break;
+
 		}
 	}
 
