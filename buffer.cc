@@ -17,7 +17,6 @@ Buffer::Buffer ( char *filename ) {
 	source_file = new std::ifstream ( filename , std::ifstream::in );
 	b = new std::list<char>();
 	fill_buf();
-	dump_b();
 }
 
 
