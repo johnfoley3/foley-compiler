@@ -43,9 +43,6 @@ eoftoken.o : eoftoken.h eoftoken.cc token.h
 buffer.o : buffer.h buffer.cc
 	g++ $(FLAGS) buffer.h buffer.cc
 
-test_scanner : test_scanner.cc scanner.o
-	g++ -o main test_scanner.cc buffer.o
-
 scanner.o : scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o\
 		numtoken.o eoftoken.o buffer.o

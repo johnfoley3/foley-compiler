@@ -13,7 +13,8 @@ int main( int argc , char *argv[] ) {
 	char *filename = (char *) argv[1];
 
 	Scanner *scan = new Scanner( filename );
-	scan->next_token();
-
+	Token *someToken = scan->next_token();
+	cout << *someToken->to_string() << endl;
+	
 	return 0;
 }
