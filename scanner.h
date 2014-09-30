@@ -47,7 +47,7 @@ class Scanner
   // Some helper functions
   inline bool is_symbol (char c) {
 	return (c=='(' || c==')' || c=='<' || c=='>' || c=='=' || c==':' ||
-		c==';' || c==',' || c=='+' || c=='-' || c=='*');
+		c==';' || c==',' || c=='+' || c=='-' || c=='*' || c=='/');
   }
 
   inline bool is_alpha (char c)

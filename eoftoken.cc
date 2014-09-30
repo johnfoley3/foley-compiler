@@ -24,6 +24,11 @@ EofToken::~EofToken()
   }
 }
 
+string *EofToken::get_attribute() const {
+	string *result = new string(*attribute);
+	return result;
+}
+
 string *EofToken::to_string()
 {
   return attribute;

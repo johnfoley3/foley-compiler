@@ -108,6 +108,18 @@ void Buffer::fill_buf() {
 						source_file->putback(c);
 					}
 
+				} else if ( c == '#' ) {
+				
+					if (source_file->good()) {
+							
+						c = source_file->get();
+						while (c != '\n') {
+							
+							if (source_file->good()) {
+								c = source_file->get();
+							}
+						}
+					}
 				} else {
 
 					// wasn't end of file or white space!

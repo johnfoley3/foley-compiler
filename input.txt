@@ -1,7 +1,8 @@
+# this is a comment
 prog
 progr
 progra
-program
+program<
 programs
 
 p
@@ -9,13 +10,13 @@ pr
 pri
 prin
 printf
-print
+print/
 
 proc
 proce
 proced
 procedu
-procedur
+procedur-
 procedure
 
 n
@@ -40,3 +41,61 @@ beg
 begi
 begin
 begins
+
+t
+th
+the
+then
+thens
+
+e
+en
+end
+ends
+el
+els
+else
+elses
+
+w
+wh
+whi
+whil
+while
+whiles
+
+;
+:
+:=
+,
+=
+<
+<>
+>
+<=
+>=
++
+-
+or
+and
+o
+a
+an
+ands
+ors
+*
+12
+123
+;and
+
+iprogramprocedurethenelsewhileprintnotif
+
+;:,:=()
+
+=<>>>=<<=
+
+andor
+orand
+10john
+john10
+# This is also a comment#

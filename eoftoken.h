@@ -23,6 +23,8 @@ class EofToken : public Token
 
   ~EofToken();
 
+  string *get_attribute() const;
+
   string *to_string();
 
  private:
