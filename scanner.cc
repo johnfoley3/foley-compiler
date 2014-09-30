@@ -481,6 +481,87 @@ Token *Scanner::next_token() {
 				}
 
 				break;
+
+			case 15: 
+		
+				if (c == 'r') {
+
+					// 'procedur'
+					state = 16;
+					*attr += c;
+				} else if ( is_alphanumeric(c) ) {
+
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c) ) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+
+					scanner_fatal_error();
+					exit(0);
+				}
+
+				break;
+
+
+			case 16: 
+		
+				if (c == 'e') {
+
+					// 'procedure'
+					state = 17;
+					*attr += c;
+				} else if ( is_alphanumeric(c) ) {
+
+					state = 8;
+					 *attr += c;
+				} else if ( is_symbol(c) ) {
+					
+					token = new IdToken(attr);
+					done = true;
+					buf->unread_char(c);
+				} else if ( c == ' ') {
+					
+					token = new IdToken(attr);
+					done = true;
+				} else {
+
+					scanner_fatal_error();
+					exit(0);
+				}
+
+				break;
+
+			case 17: 
+
+				if ( is_alphanumeric(c) ) {
+
+					state = 8;
+					 *attr += c;
+				} else if (c == ' ') {
+
+					// We found procedure!
+					token = new KeywordToken(KW_PROCEDURE);
+					done = true;
+				} else if ( is_symbol(c) ) {
+
+					token = new KeywordToken(KW_PROCEDURE);
+					done = true;
+					buf->unread_char(c);
+				} else {
+
+					scanner_fatal_error();
+					exit(0);
+				}
+
+				break;
 		}
 	}
 

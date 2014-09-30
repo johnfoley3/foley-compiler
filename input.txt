@@ -10,3 +10,10 @@ pri
 prin
 printf
 print
+
+proc
+proce
+proced
+procedu
+procedur
+procedure
