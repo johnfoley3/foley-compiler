@@ -1,1 +1,12 @@
-program<
+prog
+progr
+progra
+program
+programs
+
+p
+pr
+pri
+prin
+printf
+print
