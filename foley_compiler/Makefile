@@ -6,7 +6,7 @@ FLAGS = -c
 
 # one command to rule them all
 all : test_scanner.cc scanner.o buffer.o
-	g++ -Wall -pedantic -o main test_scanner.cc scanner.o buffer.o token.o keywordtoken.o punctoken.o\
+	g++ -o main test_scanner.cc scanner.o buffer.o token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
 
 # clean out all object files
