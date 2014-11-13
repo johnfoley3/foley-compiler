@@ -9,10 +9,10 @@ Last Edit: 9.25.14
 #ifndef EOFTOKEN_H
 #define EOFTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 /* EofToken is a derived class (subclass) of Token */
 class EofToken : public Token

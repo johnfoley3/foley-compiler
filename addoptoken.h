@@ -9,10 +9,10 @@ Last Edit: 9.25.14
 #ifndef ADDOPTOKEN_H
 #define ADDOPTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 typedef enum addop_attr {   ADDOP_ADD 		= 401,
 			    ADDOP_SUB		= 402,

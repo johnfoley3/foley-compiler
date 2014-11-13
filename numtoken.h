@@ -9,10 +9,10 @@ Last Edit: 9.25.14
 #ifndef NUMTOKEN_H
 #define NUMTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 // All token classes are subclasses of Token
 class NumToken : public Token

@@ -14,9 +14,9 @@ Last Edit: 9.25.14
 #ifndef TOKEN_H
 #define TOKEN_H
 
-using namespace std;
-
 #include <string>
+
+using namespace std;
 
 /* An enum is like a series of int constant defintions,
    except the enum provides some rudimentary type checking.

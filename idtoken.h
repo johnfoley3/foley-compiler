@@ -9,10 +9,10 @@ Last Edit: 9.25.14
 #ifndef IDTOKEN_H
 #define IDTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 /* IdToken is a derived class (subclass) of Token */
 class IdToken : public Token

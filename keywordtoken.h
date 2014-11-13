@@ -10,10 +10,10 @@ Last Edit: 9.25.14
 #ifndef KEYWORDTOKEN_H
 #define KEYWORDTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 typedef enum keyword_attr { KW_PROGRAM  = 100, 
 			    KW_PROCEDURE = 101,

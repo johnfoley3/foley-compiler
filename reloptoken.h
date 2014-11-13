@@ -10,10 +10,10 @@ Last Edit: 9.25.14
 #ifndef RELOPTOKEN_H
 #define RELOPTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 typedef enum relop_attr { RELOP_EQ  = 300, 
 			    RELOP_NEQ 		= 301,

@@ -10,10 +10,10 @@ Last Edit: 9.25.14
 #ifndef MULOPTOKEN_H
 #define MULOPTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 typedef enum mulop_attr {   MULOP_MUL 		= 501,
 			    MULOP_DIV		= 502,

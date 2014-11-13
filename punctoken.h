@@ -9,10 +9,10 @@ Last Edit: 9.25.14
 #ifndef PUNCTOKEN_H
 #define PUNCTOKEN_H
 
-using namespace std;
-
 #include "token.h"
 #include <string>
+
+using namespace std;
 
 typedef enum punc_attr { PUNC_SEMI  	= 200, 
 			 PUNC_COLON 	= 201,
