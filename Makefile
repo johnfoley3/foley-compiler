@@ -1,17 +1,19 @@
 ## author: John Foley
 ## date: 9.25.14
+## last edit: 11.27.14
 
 # some flags that might need to be set
 FLAGS = -c -Wall -pedantic -Wno-delete-non-virtual-dtor
 
 # one command to rule them all
-all : truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
+truc : truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
-	g++ -Wall -pedantic -o main truc.cc
+	g++ -Wall -pedantic -o main truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
+		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
 
 # clean out all object files
 clean : 
-	rm -rf *.o *.h.gch
+	rm -rf *.o *.h.gch main
 
 token.o : token.cc token.h
 	g++ $(FLAGS) token.cc
@@ -50,6 +52,3 @@ scanner.o : scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
 
 parser.o : parser.h parser.cc 
 	g++ $(FLAGS) parser.cc
-
-truc.o : truc.cc
-	g++ $(FLAGS) truc.cc

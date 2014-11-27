@@ -23,6 +23,9 @@ class Parser {
       ~Parser();
   
       bool parse_program();
+
+      // Return true if current word is the EOF token
+      bool done_with_input();
   
    private:
       bool parse_decl_list();
@@ -31,8 +34,7 @@ class Parser {
       bool parse_procedure_decl_list();
       // etc, etc...; one for each non-terminal in TruPL 2.0
   
-      // Return true if current word is the EOF token
-      bool done_with_input();
+      
   
       // The lexical analyzer
       Scanner *lex;

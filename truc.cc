@@ -6,6 +6,10 @@ Last Edit: 11.27.14
 */
 
 #include <stdio.h>
+#include "scanner.h"
+#include "parser.h"
+
+using namespace std;
 
 int main(int argc, const char* argv[]) {
 
@@ -14,7 +18,24 @@ int main(int argc, const char* argv[]) {
 		printf("Expected one argument, the input file name\n");
 	}
 
-	const char* filename = argv[1];
+	char *filename = (char *) argv[1];
 
-	printf("%s \n", filename);
+	Scanner *scan = new Scanner(filename);
+
+	Parser *parse = new Parser(scan);
+
+	if (parse->parse_program()) {
+
+		if (parse->done_with_input()) {
+			printf("Parse of program %s has succeeded, no errors.\n", filename);	
+		}
+
+		printf("SYNTAX ERROR: unexpected tokens at end of file.\n");
+		
+	} else {
+
+		printf("Parse of program %s has failed.\n", filename);
+	}
+
+	return 0;
 }

@@ -1,4 +1,5 @@
 #include "parser.h"
+#include <stdio.h>
 
 Parser::Parser(Scanner *s) 
 {
@@ -19,6 +20,11 @@ Parser::~Parser()
 
     delete word;
   }
+}
+
+void parse_error (string *expected, Token *found) {
+
+  printf("Syntax error: Expected %s, found %s\n", expected, found);
 }
 
 // If we have parsed the entire program, then word
