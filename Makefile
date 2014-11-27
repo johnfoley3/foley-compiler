@@ -2,11 +2,11 @@
 ## date: 9.25.14
 
 # some flags that might need to be set
-FLAGS = -c
+FLAGS = -c -Wall -pedantic
 
 # one command to rule them all
-all : test_scanner.cc scanner.o buffer.o
-	g++ -Wall -pedantic -o main test_scanner.cc scanner.o buffer.o token.o keywordtoken.o punctoken.o\
+all : 
+	g++ -Wall -pedantic -o main parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
 
 # clean out all object files
@@ -48,3 +48,5 @@ scanner.o : scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
 		numtoken.o eoftoken.o buffer.o
 	g++ $(FLAGS) scanner.cc
 
+parser.o : parser.h parser.cc 
+	g++ $(FLAGS) parser.cc

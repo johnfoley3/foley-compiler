@@ -133,8 +133,6 @@ void Buffer::fill_buf() {
 
 void Buffer::dump_b() {
 
-	int i = 0;
-
 	list<char>::iterator it;
 	for (it = b->begin(); it != b->end(); it++) {
 		cout << *it ;
