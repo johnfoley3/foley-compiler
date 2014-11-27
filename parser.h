@@ -1,4 +1,5 @@
 #ifndef PARSER_H
+
 #define PARSER_H
 
 #include "token.h"
@@ -25,6 +26,9 @@ class Parser {
   
    private:
       bool parse_decl_list();
+      bool parse_block();
+      bool parse_variable_decl_list();
+      bool parse_procedure_decl_list();
       // etc, etc...; one for each non-terminal in TruPL 2.0
   
       // Return true if current word is the EOF token

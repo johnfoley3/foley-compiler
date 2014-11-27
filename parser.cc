@@ -9,10 +9,14 @@ Parser::Parser(Scanner *s)
 
 Parser::~Parser() 
 {
-  if (lex != null) {
+
+  if (lex != NULL) {
+
     delete lex;
   }
-  if (word != null) {
+
+  if (word != NULL) {
+
     delete word;
   }
 }
@@ -72,16 +76,19 @@ bool Parser::parse_program()
 		string *expected = new string ("';'");
 		// Expected should be deleted in parse_error()
 		parse_error (expected, word);
+
 		return false;
 	      }
 	      
 	      // We failed to parse BLOCK
 	    } else {
+
 	      return false;
 	    }
 	    
 	    // We failed to parse DECL_LIST
 	  } else {
+
 	    return false;
 	  }
 	  
@@ -146,4 +153,19 @@ bool Parser::parse_decl_list()
       return false;
    }
 
+}
+
+bool Parser::parse_block() {
+
+    return true;
+}
+
+bool Parser::parse_variable_decl_list() {
+
+    return true;
+}
+
+bool Parser::parse_procedure_decl_list() {
+
+    return true;
 }

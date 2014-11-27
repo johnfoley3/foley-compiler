@@ -2,12 +2,12 @@
 ## date: 9.25.14
 
 # some flags that might need to be set
-FLAGS = -c -Wall -pedantic
+FLAGS = -c -Wall -pedantic -Wno-delete-non-virtual-dtor
 
 # one command to rule them all
-all : 
-	g++ -Wall -pedantic -o main parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
+all : truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
+	g++ $(FLAGS) -o main truc.cc
 
 # clean out all object files
 clean : 
@@ -50,3 +50,7 @@ scanner.o : scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
 
 parser.o : parser.h parser.cc 
 	g++ $(FLAGS) parser.cc
+
+truc.o : truc.cc
+	g++ $(FLAGS) truc.cc
+	
