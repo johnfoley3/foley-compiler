@@ -9,12 +9,12 @@ Last Edit: 11.27.14
 
 int main(int argc, const char* argv[]) {
 
-	if (argc < 0 || argc > 1) {
+	if (argc < 0 || argc > 2) {
 
 		printf("Expected one argument, the input file name\n");
 	}
 
-	const char* filename = argv[0];
+	const char* filename = argv[1];
 
 	printf("%s \n", filename);
 }
