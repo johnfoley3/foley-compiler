@@ -284,6 +284,10 @@ bool Parser::parse_procedure_decl_list() {
     if (word->get_token_type() == TOKEN_KEYWORD 
     && static_cast<KeywordToken *>(word)->get_attribute() == KW_PROCEDURE) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
         if (parse_procedure_decl()) {
 
             // Match ;
@@ -342,18 +346,34 @@ bool Parser::parse_procedure_decl() {
     if (word->get_token_type() == TOKEN_KEYWORD 
     && static_cast<KeywordToken *>(word)->get_attribute() == KW_PROCEDURE) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
         // match identifier
         if (word->get_token_type() == TOKEN_ID) {
+
+            // ADVANCE
+            delete word;
+            word = lex->next_token();
 
             // match (
             if (word->get_token_type() == TOKEN_PUNC 
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
+
+                // ADVANCE
+                delete word;
+                word = lex->next_token();
 
                 if (parse_arg_list()) {
 
                     // match )
                     if (word->get_token_type() == TOKEN_PUNC 
                     && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+                        // ADVANCE
+                        delete word;
+                        word = lex->next_token();
 
                         if (parse_variable_decl_list()) {
 
@@ -417,8 +437,16 @@ bool Parser::parse_arg_list() {
     // match identifier
     if (word->get_token_type() == TOKEN_ID) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
         if (word->get_token_type() == TOKEN_PUNC
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COLON) {
+
+            // ADVANCE
+            delete word;
+            word = lex->next_token();
 
             if (parse_standard_type()) {
 
@@ -448,6 +476,10 @@ bool Parser::parse_arg_list() {
     } else if (word->get_token_type() == TOKEN_PUNC 
                     && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
         // successfully parsed lambda
         return true;
     } else {
@@ -471,6 +503,10 @@ bool Parser::parse_arg_list_hat() {
     if (word->get_token_type() == TOKEN_PUNC 
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
         if (parse_arg_list()) {
 
             // successfully parsed arg_list_hat
@@ -482,6 +518,10 @@ bool Parser::parse_arg_list_hat() {
         }
     } else if (word->get_token_type() == TOKEN_PUNC 
                     && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
 
         // successfully parsed lambda
         return true;
