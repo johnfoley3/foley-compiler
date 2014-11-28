@@ -22,9 +22,9 @@ Parser::~Parser()
   }
 }
 
-void parse_error (string *expected, Token *found) {
+void Parser::parse_error (string *expected, Token *found) {
 
-  printf("Syntax error: Expected %s, found %s\n", expected, found);
+  printf("Syntax error: Expected %s, found %u\n", expected->c_str(), found->get_token_type());
 }
 
 // If we have parsed the entire program, then word

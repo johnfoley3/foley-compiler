@@ -6,8 +6,8 @@ Last Edit: 11.27.14
 */
 
 #include <stdio.h>
-#include "scanner.h"
 #include "parser.h"
+#include "scanner.h"
 
 using namespace std;
 
