@@ -33,11 +33,13 @@ void Parser::parse_error (string *expected, Token *found) {
 // that condition.
 bool Parser::done_with_input()
 {
+
   return word->get_token_type() == TOKEN_EOF;
 }
 
 bool Parser::parse_program()
 {
+
   // PROGRAM -> program identifier ; DECL_LIST BLOCK ;
   // Predict (program identifier ; DECL_LIST BLOCK ;) == {program}
 
@@ -62,6 +64,7 @@ bool Parser::parse_program()
       // Match ;
       if (word->get_token_type() == TOKEN_PUNC 
       && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
+
         // ADVANCE
         delete word; 
         word = lex->next_token();
@@ -74,6 +77,7 @@ bool Parser::parse_program()
 
             if (word->get_token_type() == TOKEN_PUNC
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
+
               // ADVANCE
               delete word;
               word = lex->next_token();
@@ -83,10 +87,9 @@ bool Parser::parse_program()
 
             // We failed to match the second semicolon
             } else {
-              string *expected = new string ("';'");
-              // Expected should be deleted in parse_error()
-              parse_error (expected, word);
 
+              string *expected = new string ("';'");
+              parse_error (expected, word);
               return false;
             }
 
@@ -104,6 +107,7 @@ bool Parser::parse_program()
 
       // We failed to match the first semicolon
       } else {
+
         string *expected = new string ("';'");
         parse_error (expected, word);
         return false;
@@ -123,7 +127,6 @@ bool Parser::parse_program()
     return false;
   }
 
-  // We shouldn't reach this statement.
   return false;
 }
 
@@ -160,7 +163,7 @@ bool Parser::parse_decl_list()
         }
 
     } else {
-        // word isn't in predict (DECL_LIST)
+
         string *expected = new string ("identifier, keyword \"begin\" or keyword \"procedure\"");
         parse_error (expected, word);
         return false;
@@ -283,10 +286,6 @@ bool Parser::parse_procedure_decl_list() {
     // match procedure
     if (word->get_token_type() == TOKEN_KEYWORD 
     && static_cast<KeywordToken *>(word)->get_attribute() == KW_PROCEDURE) {
-
-        // ADVANCE
-        delete word;
-        word = lex->next_token();
 
         if (parse_procedure_decl()) {
 
@@ -437,10 +436,6 @@ bool Parser::parse_arg_list() {
     // match identifier
     if (word->get_token_type() == TOKEN_ID) {
 
-        // ADVANCE
-        delete word;
-        word = lex->next_token();
-
         if (word->get_token_type() == TOKEN_PUNC
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COLON) {
 
@@ -475,10 +470,6 @@ bool Parser::parse_arg_list() {
     // match )
     } else if (word->get_token_type() == TOKEN_PUNC 
                     && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
-
-        // ADVANCE
-        delete word;
-        word = lex->next_token();
 
         // successfully parsed lambda
         return true;
@@ -519,10 +510,6 @@ bool Parser::parse_arg_list_hat() {
     } else if (word->get_token_type() == TOKEN_PUNC 
                     && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
 
-        // ADVANCE
-        delete word;
-        word = lex->next_token();
-
         // successfully parsed lambda
         return true;
 
@@ -538,6 +525,33 @@ bool Parser::parse_arg_list_hat() {
 }
 
 bool Parser::parse_identifier_list() {
+
+    // IDENTIFIER_LIST -> identifier IDENTIFIER_LIST_PRM
+    // PREDICT(identifier IDENTIFIER_LIST_PRM) => {identifier}
+
+    //match identifier
+    if (word->get_token_type() == TOKEN_ID) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        if (parse_identifier_list_prm()) {
+
+            // successfully parsed identifier_list
+            return true;
+        } else {
+
+            // failed to parse identifier_list
+            return false;
+        }
+    } else {
+
+        // failed to find identifier
+        string *expected = new string ("identifier");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
