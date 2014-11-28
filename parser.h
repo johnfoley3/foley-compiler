@@ -32,9 +32,10 @@ class Parser {
       bool parse_block();
       bool parse_variable_decl_list();
       bool parse_procedure_decl_list();
-      // etc, etc...; one for each non-terminal in TruPL 2.0
-  
-      
+      bool parse_variable_decl();
+      bool parse_identifier_list();
+      bool parse_standard_type();
+      bool parse_procedure_decl();
   
       // The lexical analyzer
       Scanner *lex;
