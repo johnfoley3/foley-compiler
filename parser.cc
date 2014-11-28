@@ -353,7 +353,7 @@ bool Parser::parse_procedure_decl() {
 
                     // match )
                     if (word->get_token_type() == TOKEN_PUNC 
-                    && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
+                    && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
 
                         if (parse_variable_decl_list()) {
 
@@ -409,6 +409,90 @@ bool Parser::parse_procedure_decl() {
 }
 
 bool Parser::parse_arg_list() {
+
+    // ARG_LIST -> IDENTIFIER_LIST : STANDARD_TYPE ARG_LIST_HAT
+    //          -> LAMDA
+    // PREDICT(IDENTIFIER_LIST : STANDARD_TYPE ARG_LIST_HAT) => {identifier}
+
+    // match identifier
+    if (word->get_token_type() == TOKEN_ID) {
+
+        if (word->get_token_type() == TOKEN_PUNC
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COLON) {
+
+            if (parse_standard_type()) {
+
+                if (parse_arg_list_hat()) {
+
+                    // successfully parsed arg_list
+                    return true;
+                } else {
+
+                    // failed to parse arg_list_hat
+                    return false;
+                }
+            } else {
+
+                // failed to parse standard type
+                return false;
+            }
+        } else {
+
+            // failed to find :
+            string *expected = new string ("\":\"");
+            parse_error(expected, word);
+            return false;
+        }
+    // PREDICT(ARGS_LIST -> LAMBDA) => { ) }
+    // match )
+    } else if (word->get_token_type() == TOKEN_PUNC 
+                    && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+        // successfully parsed lambda
+        return true;
+    } else {
+
+        // failed to find identifier or )
+        string *expected = new string ("identifier or \")\"");
+        parse_error(expected, word);
+        return false;
+    }
+
+    return false;
+}
+
+bool Parser::parse_arg_list_hat() {
+
+    // ARG_LIST_HAT -> ; ARG_LIST
+    //              -> LAMBDA
+    // PREDICT(; ARG_LIST) => { ; }
+
+    // match ;
+    if (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
+
+        if (parse_arg_list()) {
+
+            // successfully parsed arg_list_hat
+            return true;
+        } else {
+
+            // failed to parse arg_list 
+            return false;
+        }
+    } else if (word->get_token_type() == TOKEN_PUNC 
+                    && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+        // successfully parsed lambda
+        return true;
+
+    } else {
+
+        // failed to find ; or )
+        string *expected = new string ("\";\" or \")\"");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
