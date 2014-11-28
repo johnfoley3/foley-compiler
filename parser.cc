@@ -335,6 +335,81 @@ bool Parser::parse_procedure_decl_list() {
 
 bool Parser::parse_procedure_decl() {
 
+    // PROCEDURE_DECL -> procedure identifier ( arg_list ) VARIABLE_DECL_LIST BLOCK
+    // PREDICT(procedure identifier ( arg_list ) VARIABLE_DECL_LIST BLOCK) => {procedure}
+
+    // match procedure
+    if (word->get_token_type() == TOKEN_KEYWORD 
+    && static_cast<KeywordToken *>(word)->get_attribute() == KW_PROCEDURE) {
+
+        // match identifier
+        if (word->get_token_type() == TOKEN_ID) {
+
+            // match (
+            if (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
+
+                if (parse_arg_list()) {
+
+                    // match )
+                    if (word->get_token_type() == TOKEN_PUNC 
+                    && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
+
+                        if (parse_variable_decl_list()) {
+
+                            if (parse_block()) {
+
+                                // successfully parsed procedure_decl
+                                return true;
+                            } else {
+
+                                // failed to parse block
+                                return false;
+                            }
+                        } else {
+
+                            // failed to parse variable_decl_list
+                            return false;
+                        }
+                    } else {
+
+                        // failed to find )
+                        string *expected = new string ("\")\"");
+                        parse_error(expected, word);
+                        return false;
+                    }
+                } else {
+
+                    // failed to parse arg_list
+                    return false;
+                }
+            } else {
+
+                // failed to find (
+                string *expected = new string ("\"(\"");
+                parse_error(expected, word);
+                return false;
+            }
+        } else {
+
+            // failed to find identifier
+            string *expected = new string ("identifier");
+            parse_error(expected, word);
+            return false;
+        }
+    } else {
+
+        // failed to find procedure
+        string *expected = new string ("keyword \"procedure\"");
+        parse_error(expected, word);
+        return false;
+    }
+
+    return false;
+}
+
+bool Parser::parse_arg_list() {
+
     return false;
 }
 
