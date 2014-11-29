@@ -556,6 +556,54 @@ bool Parser::parse_identifier_list() {
     return false;
 }
 
+bool Parser::parse_identifier_list_prm() {
+
+    //IDENTIFIER_LIST_PRM -> , identifier IDENTIFIER_LIST_PRM
+    //                    -> LAMBDA
+    // PREDICT(, identifier IDENTIFIER_LIST_PRM) => {,}
+
+    // match ,
+    if (word->get_token_type() == TOKEN_PUNC 
+                    && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COMMA) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        // match identifier
+        if (word->get_token_type() == TOKEN_ID) {
+
+            // ADVANCE
+            delete word;
+            word = lex->next_token();
+
+            if (parse_identifier_list_prm()) {
+
+                //successfully parsed identifier_list_prm
+                return true;
+            } else {
+
+                // identifier_list_prm failed to parse
+                return false;
+            }
+        } else {
+
+            // failed to find identifier
+            string *expected = new string ("identifier");
+            parse_error(expected, word);
+            return false;
+        }
+    } else {
+
+        // failed to find ,
+        string *expected = new string ("\",\"");
+        parse_error(expected, word);
+        return false;
+    }
+
+    return false;
+}
+
 bool Parser::parse_standard_type() {
 
     return false;

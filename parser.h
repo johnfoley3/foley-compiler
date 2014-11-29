@@ -38,6 +38,7 @@ class Parser {
       bool parse_procedure_decl();
       bool parse_arg_list();
       bool parse_arg_list_hat();
+      bool parse_identifier_list_prm();
   
       // The lexical analyzer
       Scanner *lex;
