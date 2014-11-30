@@ -1032,10 +1032,81 @@ bool Parser::parse_if_stmt() {
 
 bool Parser::parse_if_stmt_hat() {
 
+    // IF_STMT_HAT -> else BLOCK
+    //             -> LAMBDA
+    // PREDICT(else BLOCK) => {else}
+
+    //match else
+    if (word->get_token_type() == TOKEN_KEYWORD
+        && static_cast<KeywordToken *>(word)->get_attribute() == KW_ELSE) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        if (parse_block()) {
+
+            //successfully parsed if_stmt_hat
+            return true;
+        } else {
+
+            //failed to parse block
+            return false;
+        }
+        // PREDICT(IF_STMT_HAT -> LAMBDA) => {;}
+    //match ;
+    } else if (word->get_token_type() == TOKEN_PUNC 
+      && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
+
+        // successfully parsed lambda production
+        return true;
+    } else {
+
+        // failed to find else or ;
+        string *expected = new string ("else or \";\"");
+        parse_error(expected, word);
+        return false;
+    }
+
     return false;
 }
 
 bool Parser::parse_while_stmt() {
+
+    // WHILE_STMT -> while EXPR BLOCK
+    // PREDICT(while EXPR BLOCK) => {while}
+
+    // match while
+    if (word->get_token_type() == TOKEN_KEYWORD
+        && static_cast<KeywordToken *>(word)->get_attribute() == KW_WHILE) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        if (parse_expr()) {
+
+            if (parse_block()) {
+
+                //successfully parsed while_stmt
+                return true;
+            } else {
+
+                // failed to parse block
+                return false;
+            }
+        } else {
+
+            // failed to parse expr
+            return false;
+        }
+    } else {
+
+        // failed to find while
+        string *expected = new string ("while");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
