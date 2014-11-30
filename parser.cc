@@ -938,10 +938,99 @@ bool Parser::parse_stmt_ass_proc_tail() {
 
 bool Parser::parse_assignment_stmt_tail() {
 
+    // ASSIGNMENT_STMT_TAIL -> := EXPR
+    // PREDICT(:= EXPR) => {:=}
+
+    // match :=
+    if (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_ASSIGN) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        if (parse_expr()) {
+
+            //successfully parsed assignment_stmt_tail
+            return true;
+        } else {
+
+            // failed to parse expr
+            return false;
+        }
+    } else {
+
+        // failed to find :=
+        string *expected = new string ("\":=\"");
+        parse_error(expected, word);
+        return false;
+    }
+
     return false;
 }
 
 bool Parser::parse_if_stmt() {
+
+    // IF_STMT -> if EXPR then BLOCK IF_STMT_HAT
+    // PREDICT(if EXPR then BLOCK IF_STMT_HAT) => {if}
+
+    // match if
+    if (word->get_token_type() == TOKEN_KEYWORD
+        && static_cast<KeywordToken *>(word)->get_attribute() == KW_IF) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        if (parse_expr()) {
+
+            if (word->get_token_type() == TOKEN_KEYWORD
+                && static_cast<KeywordToken *>(word)->get_attribute() == KW_THEN) {
+
+                // ADVANCE
+                delete word;
+                word = lex->next_token();
+
+                if (parse_block()) {
+
+                    if (parse_if_stmt_hat()) {
+
+                        //successfully parsed if_stmt
+                        return true;
+                    } else {
+
+                        // failed to parse stmt_hat
+                        return false;
+                    }
+                } else {
+
+                    // failed to parse block
+                    return false;
+                }
+            } else {
+
+                // failed to find if
+                string *expected = new string ("if");
+                parse_error(expected, word);
+                return false;
+            }
+        } else {
+
+            // failed to parse expr
+            return false;
+        }
+    } else {
+
+        // failed to find if
+        string *expected = new string ("if");
+        parse_error(expected, word);
+        return false;
+    }
+
+    return false;
+}
+
+bool Parser::parse_if_stmt_hat() {
 
     return false;
 }
@@ -957,6 +1046,11 @@ bool Parser::parse_print_stmt() {
 }
 
 bool Parser::parse_procedure_call_stmt_tail() {
+
+    return false;
+}
+
+bool Parser::parse_expr() {
 
     return false;
 }
