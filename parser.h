@@ -52,6 +52,8 @@ class Parser {
       bool parse_expr();
       bool parse_expr_list();
       bool parse_expr_list_hat();
+      bool parse_simple_expr();
+      bool parse_expr_hat();
   
       // The lexical analyzer
       Scanner *lex;

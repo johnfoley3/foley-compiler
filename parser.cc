@@ -564,7 +564,7 @@ bool Parser::parse_identifier_list_prm() {
 
     // match ,
     if (word->get_token_type() == TOKEN_PUNC 
-                    && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COMMA) {
+        && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COMMA) {
 
         // ADVANCE
         delete word;
@@ -639,8 +639,8 @@ bool Parser::parse_standard_type() {
         return true;
     } else {
 
-        // failed to find num or bool
-        string *expected = new string ("number or bool");
+        // failed to find int or bool
+        string *expected = new string ("int or bool");
         parse_error(expected, word);
         return false;
     }
@@ -1158,8 +1158,22 @@ bool Parser::parse_procedure_call_stmt_tail() {
 
         if (parse_expr_list()) {
 
-            // successfully parsed procedure_call_stmt_tail
-            return true;
+            if (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+                // ADVANCE
+                delete word;
+                word = lex->next_token(); 
+
+                // successfully parsed procedure_call_stmt_tail
+                return true;
+            } else {
+
+                // failed to find )
+                string *expected = new string ("\")\"");
+                parse_error(expected, word);
+                return false;
+            }    
         } else {
 
             // failed to parse expr_lsit
@@ -1178,15 +1192,144 @@ bool Parser::parse_procedure_call_stmt_tail() {
 
 bool Parser::parse_expr_list() {
 
+    // EXPR_LIST -> EXPR EXPR_LIST_HAT
+    //           -> LAMBDA
+    // PREDICT(EXPR EXPR_LIST_HAT) => {identifier, num, (, not, +, -}
+    if ((word->get_token_type() == TOKEN_ID)
+        || (word->get_token_type() == TOKEN_NUM)
+        || (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN)
+        || (word->get_token_type() == TOKEN_KEYWORD
+            && static_cast<KeywordToken *>(word)->get_attribute() == KW_NOT)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+
+        if (parse_expr()) {
+
+            if (parse_expr_list_hat()) {
+
+                // successfully parsed expr_list
+                return true;
+            } else {
+
+                // failed to parse expr_list_hat
+                return false;
+            }
+        } else {
+
+            // failed to parse expr
+            return false;
+        }
+        // PREDICT (EXPR_LIST -> LAMBDA) => { ) }
+        // match )
+    } else if (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+        // successfully parsed lambda closure
+        return true;
+    } else {
+
+        // failed to find identifier, num, (, not, +, -, )
+        string *expected = new string ("identifier, num, \"(\", not, \"+\", \"-\" or \")\"");
+        parse_error(expected, word);
+        return false;
+    }
+
     return false;
 }
 
 bool Parser::parse_expr_list_hat() {
 
+    // EXPR_LIST_HAT -> , EXPR_LIST
+    //               -> LAMBDA
+    // PREDICT(, EXPR_LIST) => {,}
+
+    // match ,
+    if (word->get_token_type() == TOKEN_PUNC 
+        && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COMMA) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_expr_list()) {
+
+            // successfully parsed expr_list_hat
+            return true;
+        } else {
+
+            // failed to parse expr_list
+            return false;
+        }
+    } else if (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+        // successfully parsed lambda transition
+        return true;
+    } else {
+
+        // failed to find , or )
+        string *expected = new string ("\",\" or \")\"");
+        parse_error(expected, word);
+        return false;
+    }
+
+
     return false;
 }
 
 bool Parser::parse_expr() {
+
+    // EXPR -> SIMPLE_EXPR EXPR_HAT
+    // PREDICT (SIMPLE_EXPR EXPR_HAT) => {identifier, num, (, +, -, not}
+
+    // match identifier, num, (, +, -, not
+    if ((word->get_token_type() == TOKEN_ID)
+        || (word->get_token_type() == TOKEN_NUM)
+        || (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN)
+        || (word->get_token_type() == TOKEN_KEYWORD
+            && static_cast<KeywordToken *>(word)->get_attribute() == KW_NOT)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+
+        if (parse_simple_expr()) {
+
+            if (parse_expr_hat()) {
+
+                // successfully parsed expr
+                return true;
+            } else {
+
+                // failed to parse expr_hat
+                return false;
+            }
+        } else {
+
+            // failed to parse simple expr
+            return false;
+        }
+    } else {
+
+        // failed to find identifier, num, (, not, +, -
+        string *expected = new string ("identifier, num, \"(\", not, \"+\" or \"-\"");
+        parse_error(expected, word);
+        return false;
+    }
+
+    return false;
+}
+
+bool Parser::parse_simple_expr() {
+
+    return false;
+}
+
+bool Parser::parse_expr_hat() {
 
     return false;
 }
