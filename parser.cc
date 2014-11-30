@@ -1113,6 +1113,34 @@ bool Parser::parse_while_stmt() {
 
 bool Parser::parse_print_stmt() {
 
+    // PRINT_STMT -> print EXPR
+    // PREDICT(print EXPR) => {print}
+
+    // match print
+    if (word->get_token_type() == TOKEN_KEYWORD
+        && static_cast<KeywordToken *>(word)->get_attribute() == KW_PRINT) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        if (parse_expr()) {
+
+            //successfully parsed print_stmt
+            return true;
+        } else {
+
+            // failed to parse expr
+            return false;
+        }
+    } else {
+
+        // failed to find print
+        string *expected = new string ("print");
+        parse_error(expected, word);
+        return false;
+    }
+
     return false;
 }
 
