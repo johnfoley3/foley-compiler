@@ -50,6 +50,8 @@ class Parser {
       bool parse_procedure_call_stmt_tail();
       bool parse_if_stmt_hat();
       bool parse_expr();
+      bool parse_expr_list();
+      bool parse_expr_list_hat();
   
       // The lexical analyzer
       Scanner *lex;

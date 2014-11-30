@@ -1146,6 +1146,43 @@ bool Parser::parse_print_stmt() {
 
 bool Parser::parse_procedure_call_stmt_tail() {
 
+    // PROCEDURE_CALL_STMT_TAIL -> ( EXPR_LIST )
+    // PREDICT( ( EXPR_LIST )) => {(}
+
+    if (word->get_token_type() == TOKEN_PUNC 
+        && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_expr_list()) {
+
+            // successfully parsed procedure_call_stmt_tail
+            return true;
+        } else {
+
+            // failed to parse expr_lsit
+            return false;
+        }
+    } else {
+
+        // failed to find (
+        string *expected = new string ("\"(\"");
+        parse_error(expected, word);
+        return false;
+    }
+
+    return false;
+}
+
+bool Parser::parse_expr_list() {
+
+    return false;
+}
+
+bool Parser::parse_expr_list_hat() {
+
     return false;
 }
 
