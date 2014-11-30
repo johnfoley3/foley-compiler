@@ -829,20 +829,8 @@ bool Parser::parse_stmt() {
 
         if (parse_if_stmt()) {
 
-            // match ;
-            if (word->get_token_type() == TOKEN_PUNC 
-                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
-
-                // ADVANCE
-                delete word;
-                word = lex->next_token();
-            } else {
-
-                // failed to find begin
-                string *expected = new string ("\";\"");
-                parse_error(expected, word);
-                return false;
-            }
+            // successfully parsed stmt
+            return true;
         } else {
 
             // failed to parse if_stmt
@@ -856,20 +844,8 @@ bool Parser::parse_stmt() {
 
         if (parse_while_stmt()) {
 
-            // match ;
-            if (word->get_token_type() == TOKEN_PUNC 
-                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
-
-                // ADVANCE
-                delete word;
-                word = lex->next_token();
-            } else {
-
-                // failed to find begin
-                string *expected = new string ("\";\"");
-                parse_error(expected, word);
-                return false;
-            }
+            // successfully parsed stmt
+            return true;
         } else {
 
             // failed to parse parse_while_stmt
@@ -882,20 +858,8 @@ bool Parser::parse_stmt() {
 
         if (parse_print_stmt()) {
 
-            // match ;
-            if (word->get_token_type() == TOKEN_PUNC 
-                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
-
-                // ADVANCE
-                delete word;
-                word = lex->next_token();
-            } else {
-
-                // failed to find begin
-                string *expected = new string ("\";\"");
-                parse_error(expected, word);
-                return false;
-            }
+            // successfully parsed stmt
+            return true;
         } else {
 
             // failed to parse parse_print_stmt
@@ -905,22 +869,14 @@ bool Parser::parse_stmt() {
         // match identifier
     } else if (word->get_token_type() == TOKEN_ID) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
         if (parse_stmt_ass_proc_tail()) {
 
-            // match ;
-            if (word->get_token_type() == TOKEN_PUNC 
-                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
-
-                // ADVANCE
-                delete word;
-                word = lex->next_token();
-            } else {
-
-                // failed to find begin
-                string *expected = new string ("\";\"");
-                parse_error(expected, word);
-                return false;
-            }
+            // successfully parsed stmt
+            return true;
         } else {
 
             // failed to parse parse_stmt_ass_proc_tail
@@ -933,6 +889,55 @@ bool Parser::parse_stmt() {
         parse_error(expected, word);
         return false;
     }
+    return false;
+}
+
+bool Parser::parse_stmt_ass_proc_tail() {
+
+    // STMT_ASS_PROC_TAIL -> ASSIGNMENT_STMT_TAIL
+    //                    -> PROCEDURE_CALL_STMT_TAIL
+    // PREDICT(ASSIGNMENT_STMT_TAIL) => {:=}
+
+    // match :=
+    if (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_ASSIGN) {
+
+        if (parse_assignment_stmt_tail()) {
+
+            // successfully parsed stmt_ass_proc_tail
+            return true;
+        } else {
+
+            // failed to parse assignment_stmt_tail
+            return false;
+        }
+        // PREDICT(PROCEDURE_CALL_STMT_TAIL) => {(}
+        // match (
+    } else if (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
+
+        if (parse_procedure_call_stmt_tail()) {
+
+            // successfully parsed stmt_ass_proc_tail
+            return true;
+        } else {
+
+            // failed to parse procedure_call_stmt_tail
+            return false;
+        }
+    } else {
+
+        // failed to find := or (
+        string *expected = new string ("\":=\" or \"(\"");
+        parse_error(expected, word);
+        return false;
+    }
+
+    return false;
+}
+
+bool Parser::parse_assignment_stmt_tail() {
+
     return false;
 }
 
@@ -951,7 +956,7 @@ bool Parser::parse_print_stmt() {
     return false;
 }
 
-bool Parser::parse_stmt_ass_proc_tail() {
+bool Parser::parse_procedure_call_stmt_tail() {
 
     return false;
 }

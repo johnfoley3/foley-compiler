@@ -46,6 +46,8 @@ class Parser {
       bool parse_while_stmt();
       bool parse_print_stmt();
       bool parse_stmt_ass_proc_tail();
+      bool parse_assignment_stmt_tail();
+      bool parse_procedure_call_stmt_tail();
   
       // The lexical analyzer
       Scanner *lex;
