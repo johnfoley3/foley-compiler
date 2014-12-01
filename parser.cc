@@ -1375,10 +1375,39 @@ bool Parser::parse_expr_hat() {
     // PREDICT(relop SIMPLE_EXPR) => {relop}
 
     // match relop
+    if (word->get_token_type() == TOKEN_RELOP) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_simple_expr()) {
+
+            // successfully parsed expr_hat
+            return true;
+        }
     // PREDICT(EXPR_HAT -> LAMBDA) => {;, then, begin, , )}
+    // match ; then begin , ) 
+    } else if ((word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI)
+            || (word->get_token_type() == TOKEN_KEYWORD
+                && static_cast<KeywordToken *>(word)->get_attribute() == KW_THEN)
+            || (word->get_token_type() == TOKEN_KEYWORD
+                && static_cast<KeywordToken *>(word)->get_attribute() == KW_BEGIN)
+            || (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COMMA)
+            || (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE)) {
 
-    // match ; then begin , )
+        // successfully parsed lambda
+        return true;
+    } else {
+
+        // failed to find relop ; then begin , )
+        string *expected = new string ("relop, \";\", then, begin, \",\" or \")\"");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
@@ -1390,10 +1419,53 @@ bool Parser::parse_simple_expr_prm() {
     // PREDICT(addop TERM SIMPLE_EXPR_PRM) => {addop}
 
     // match addop
+    if (word->get_token_type() == TOKEN_ADDOP) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_term()) {
+
+            if (parse_simple_expr_prm()) {
+
+                // successfully parsed simple_expr_prm
+                return true;
+            } else {
+
+                // failed to parse simple_expr_prm
+                return false;
+            }
+        } else {
+
+            // failed to parse term
+            return false;
+        }
 
     // PREDICT(SIMPLE_EXPR_PRM -> LAMBDA) => {relop ; then begin , )}
 
     // match relop ; then begin , )
+    } else if ((word->get_token_type() == TOKEN_RELOP)
+            || (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI)
+            || (word->get_token_type() == TOKEN_KEYWORD
+                && static_cast<KeywordToken *>(word)->get_attribute() == KW_THEN)
+            || (word->get_token_type() == TOKEN_KEYWORD
+                && static_cast<KeywordToken *>(word)->get_attribute() == KW_BEGIN)
+            || (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COMMA)
+            || (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE)) {
+
+        // successfully parsed lambda
+        return true;
+    } else {
+
+        // failed to find relop ; then begin , )
+        string *expected = new string ("relop, \";\", then, begin, \",\" or \")\"");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
