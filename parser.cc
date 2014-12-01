@@ -1476,6 +1476,40 @@ bool Parser::parse_term() {
     // PREDICT(FACTOR TERM_PRM) => {identifier, num, (, +, -, not}
 
     // match identifier, num, (, +, -, not
+    if ((word->get_token_type() == TOKEN_ID)
+        || (word->get_token_type() == TOKEN_NUM)
+        || (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN)
+        || (word->get_token_type() == TOKEN_KEYWORD
+            && static_cast<KeywordToken *>(word)->get_attribute() == KW_NOT)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+
+        if (parse_factor()) {
+
+            if (parse_term_prm()) {
+
+                // successfully parsed term
+                return true;
+            } else {
+
+                // failed to parse term_prm
+                return false;
+            }
+        } else {
+
+            // failed to parse factor
+            return false;
+        }
+    } else {
+
+        // failed to find identifier, num, (, not, +, -
+        string *expected = new string ("identifier, num, \"(\", not, \"+\" or \"-\"");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
@@ -1487,10 +1521,54 @@ bool Parser::parse_term_prm() {
     // PREDICT(mulop FACTOR TERM_PRM) => {mulop}
 
     // match mulop
+    if (word->get_token_type() == TOKEN_MULOP) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_factor()) {
+
+            if (parse_term_prm()) {
+
+                // successfully parsed term_prm
+                return true;
+            } else {
+
+                // failed to parse term_prm
+                return false;
+            }
+        } else {
+
+            // failed to parse factor
+            return false;
+        }
 
     // PREDICT(TERM_PRM -> LAMBDA) => {addop relop ; then begin , )}
 
     // match addop relop ; then begin , )
+    } else if ((word->get_token_type() == TOKEN_ADDOP)
+        || (word->get_token_type() == TOKEN_RELOP)
+        || (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI)
+        || (word->get_token_type() == TOKEN_KEYWORD
+            && static_cast<KeywordToken *>(word)->get_attribute() == KW_THEN)
+        || (word->get_token_type() == TOKEN_KEYWORD
+            && static_cast<KeywordToken *>(word)->get_attribute() == KW_BEGIN)
+        || (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COMMA)
+        || (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE)) {
+
+            // successfully parsed lambda
+            return true;
+    } else {
+
+        // failed to find addop relop ; then begin , )
+        string *expected = new string ("addop, relop, \";\", then, begin, \",\" or \")\"");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
@@ -1504,15 +1582,99 @@ bool Parser::parse_factor() {
     //        -> SIGN FACTOR
 
     // match identifier
+    if (word->get_token_type() == TOKEN_ID) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        // successfully parse factor
+        return true;
 
     // match num
+    } else if (word->get_token_type() == TOKEN_NUM) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        // successfully parsed num
+        return true;
 
     // match (
+    } else if (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_expr()) {
+
+            if (word->get_token_type() == TOKEN_PUNC 
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+                // ADVANCE
+                delete word;
+                word = lex->next_token(); 
+
+                // successfully parsed factor
+                return true;
+            } else {
+
+                // failed to find )
+                string *expected = new string ("\")\"");
+                parse_error(expected, word);
+                return false;
+            }
+        } else {
+
+            // failed to parse expr
+            return false;
+        }
+    
 
     // match not
+    } else if (word->get_token_type() == TOKEN_KEYWORD
+        && static_cast<KeywordToken *>(word)->get_attribute() == KW_NOT) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_factor()) {
+
+            return true;
+        } else {
+
+            return false;
+        }
 
     // PREDICT(SIGN FACTOR) => {+ -}
     // match + -
+    } else if ((word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+
+            // ADVANCE
+        delete word;
+        word = lex->next_token(); 
+
+        if (parse_factor()) {
+
+            return true;
+        } else {
+
+            return false;
+        }
+    } else {
+
+        // failed to identifier, number (, not, +, -
+        string *expected = new string ("identifier, number, \"(\", not, \"+\" or \"-\"");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
@@ -1523,8 +1685,30 @@ bool Parser::parse_sign() {
     //      -> -
 
     // match +
+    if (word->get_token_type() == TOKEN_ADDOP 
+        && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD) {
 
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        return true;
     // match -
+    } else if (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB) {
+
+        // ADVANCE
+        delete word;
+        word = lex->next_token();
+
+        return true;
+    } else {
+
+        // failed to +, -
+        string *expected = new string ("\"+\" or \"-\"");
+        parse_error(expected, word);
+        return false;
+    }
 
     return false;
 }
