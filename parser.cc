@@ -1326,10 +1326,133 @@ bool Parser::parse_expr() {
 
 bool Parser::parse_simple_expr() {
 
+    // SIMPLE_EXPR -> TERM SIMPLE_EXPR_PRM
+    // PREDICT(TERM SIMPLE_EXPR_PRM) => {identifier, num, (, +, -, not}
+
+    // match identifier, num, (, +, -, not
+    if ((word->get_token_type() == TOKEN_ID)
+        || (word->get_token_type() == TOKEN_NUM)
+        || (word->get_token_type() == TOKEN_PUNC 
+            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN)
+        || (word->get_token_type() == TOKEN_KEYWORD
+            && static_cast<KeywordToken *>(word)->get_attribute() == KW_NOT)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
+        || (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+
+        if (parse_term()) {
+
+            if (parse_simple_expr()) {
+
+                // successfully parsed simple_expr
+                return true;
+            } else {
+
+                // failed to parse simple_expr
+                return false;
+            }
+        } else {
+
+            // failed to parse term
+            return false;
+        }
+    } else {
+
+        // failed to find identifier, num, (, not, +, -
+        string *expected = new string ("identifier, num, \"(\", not, \"+\" or \"-\"");
+        parse_error(expected, word);
+        return false;
+    }
+
     return false;
 }
 
 bool Parser::parse_expr_hat() {
+
+    // EXPR_HAT -> relop SIMPLE_EXPR
+    //          -> LAMBDA
+    // PREDICT(relop SIMPLE_EXPR) => {relop}
+
+    // match relop
+
+    // PREDICT(EXPR_HAT -> LAMBDA) => {;, then, begin, , )}
+
+    // match ; then begin , )
+
+    return false;
+}
+
+bool Parser::parse_simple_expr_prm() {
+
+    // SIMPLE_EXPR_PRM -> addop TERM SIMPLE_EXPR_PRM
+    //                 -> LAMBDA
+    // PREDICT(addop TERM SIMPLE_EXPR_PRM) => {addop}
+
+    // match addop
+
+    // PREDICT(SIMPLE_EXPR_PRM -> LAMBDA) => {relop ; then begin , )}
+
+    // match relop ; then begin , )
+
+    return false;
+}
+
+bool Parser::parse_term() {
+
+    // TERM -> FACTOR TERM_PRM
+    // PREDICT(FACTOR TERM_PRM) => {identifier, num, (, +, -, not}
+
+    // match identifier, num, (, +, -, not
+
+    return false;
+}
+
+bool Parser::parse_term_prm() {
+
+    // TERM_PRM -> mulop FACTOR TERM_PRM
+    //          -> LAMBDA
+    // PREDICT(mulop FACTOR TERM_PRM) => {mulop}
+
+    // match mulop
+
+    // PREDICT(TERM_PRM -> LAMBDA) => {addop relop ; then begin , )}
+
+    // match addop relop ; then begin , )
+
+    return false;
+}
+
+bool Parser::parse_factor() {
+
+    // FACTOR -> identifier
+    //        -> num
+    //        -> ( EXPR )
+    //        -> not FACTOR
+    //        -> SIGN FACTOR
+
+    // match identifier
+
+    // match num
+
+    // match (
+
+    // match not
+
+    // PREDICT(SIGN FACTOR) => {+ -}
+    // match + -
+
+    return false;
+}
+
+bool Parser::parse_sign() {
+
+    // SIGN -> +
+    //      -> -
+
+    // match +
+
+    // match -
 
     return false;
 }
