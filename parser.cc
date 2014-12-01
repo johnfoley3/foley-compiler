@@ -1220,7 +1220,7 @@ bool Parser::parse_procedure_call_stmt_tail() {
             }    
         } else {
 
-            // failed to parse expr_lsit
+            // failed to parse expr_list
             return false;
         }
     } else {
@@ -1395,7 +1395,7 @@ bool Parser::parse_simple_expr() {
 
         if (parse_term()) {
 
-            if (parse_simple_expr()) {
+            if (parse_simple_expr_prm()) {
 
                 // successfully parsed simple_expr
                 return true;

@@ -1,4 +1,44 @@
-program main; 
-begin 
-a := 5;
-end;
+program looper;
+	# This is a real trupl program.
+	# Here's the declarative part.
+	a: int;
+	b: bool;
+	c, d: int;
+
+	procedure john ()
+		sean : int;
+		begin
+			a := 2;
+		end;
+
+begin
+	# Here is the executable part.
+	a := 0;
+	# There are no boolean constants, so we have to init bools like this:
+	b := 0 = 0;
+
+	while b begin
+		if a <= 2 then begin
+			a := (a + 1) * 3;
+		end # No ';' at the end of blocks
+		else begin
+			a := (a - 1) * 2;
+		end; # This ';' ends the if stmt
+
+		b := a < 10;
+
+		print a;
+	end; # end while
+
+	while c begin
+
+		while d begin 
+
+			while (b+2) begin
+				a();
+			end;
+		end;
+	end;
+
+end; # end program
+		

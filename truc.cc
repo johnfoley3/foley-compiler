@@ -28,10 +28,10 @@ int main(int argc, const char* argv[]) {
 
 		if (parse->done_with_input()) {
 			printf("Parse of program %s has succeeded, no errors.\n", filename);	
-		}
+		} else {
 
-		printf("SYNTAX ERROR: unexpected tokens at end of file.\n");
-		
+			printf("SYNTAX ERROR: unexpected tokens at end of file.\n");
+		}
 	} else {
 
 		printf("Parse of program %s has failed.\n", filename);
