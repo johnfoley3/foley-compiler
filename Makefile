@@ -7,9 +7,11 @@ FLAGS = -c -Wall -pedantic -Wno-delete-non-virtual-dtor
 
 # one command to rule them all
 truc : truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
-		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
+		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o\
+		symbol_table.o
 	g++ -Wall -pedantic -o main truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
-		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o
+		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o\
+		symbol_table.o
 
 # clean out all object files
 clean : 
@@ -52,3 +54,6 @@ scanner.o : scanner.h scanner.cc token.o keywordtoken.o punctoken.o\
 
 parser.o : parser.h parser.cc 
 	g++ $(FLAGS) parser.cc
+
+symbol_table.o : symbol_table.h symbol_table.cc 
+	g++ $(FLAGS) symbol_table.cc

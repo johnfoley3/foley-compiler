@@ -40,102 +40,98 @@ bool Parser::done_with_input()
 bool Parser::parse_program()
 {
 
-    printf("Parsing: parse_program, word: %s\n", word->to_string()->c_str());
+    // PROGRAM -> program identifier ; DECL_LIST BLOCK ;
+    // Predict (program identifier ; DECL_LIST BLOCK ;) == {program}
 
-  // PROGRAM -> program identifier ; DECL_LIST BLOCK ;
-  // Predict (program identifier ; DECL_LIST BLOCK ;) == {program}
+    // Match keyword program
+    if (word->get_token_type() == TOKEN_KEYWORD 
+    && static_cast<KeywordToken *>(word)->get_attribute() == KW_PROGRAM) {
 
-  // Match keyword program
-  if (word->get_token_type() == TOKEN_KEYWORD 
-  && static_cast<KeywordToken *>(word)->get_attribute() == KW_PROGRAM) {
-
-    /* ADVANCE  - Notice that we only delete a token on an ADVANCE, and, if
-    we ADVANCE, it is the ADVANCE code that is responsible for 
-    getting the next token.
-    */
-    delete word; 
-    word = lex->next_token();
-
-    // Match identifier
-    if (word->get_token_type() == TOKEN_ID) {	
-
-      // ADVANCE
-      delete word; 
-      word = lex->next_token();
-
-      // Match ;
-      if (word->get_token_type() == TOKEN_PUNC 
-      && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
-
-        // ADVANCE
+        /* ADVANCE  - Notice that we only delete a token on an ADVANCE, and, if
+        we ADVANCE, it is the ADVANCE code that is responsible for 
+        getting the next token.
+        */
         delete word; 
         word = lex->next_token();
 
-        // Match DECL_LIST - ACTION
-        if (parse_decl_list()) {
+        // Match identifier
+        if (word->get_token_type() == TOKEN_ID) {	
 
-          // Match BLOCK - ACTION
-          if (parse_block()) {
+            // ADVANCE
+            delete word; 
+            word = lex->next_token();
 
-            if (word->get_token_type() == TOKEN_PUNC
+            // Match ;
+            if (word->get_token_type() == TOKEN_PUNC 
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
 
-              // ADVANCE
-              delete word;
-              word = lex->next_token();
+                // ADVANCE
+                delete word; 
+                word = lex->next_token();
 
-              // Parsing of non-terminal PROGRAM succeeded
-              return true;
+                // Match DECL_LIST - ACTION
+                if (parse_decl_list()) {
 
-            // We failed to match the second semicolon
+                    // Match BLOCK - ACTION
+                    if (parse_block()) {
+
+                        if (word->get_token_type() == TOKEN_PUNC
+                        && static_cast<PuncToken *>(word)->get_attribute() == PUNC_SEMI) {
+
+                            // ADVANCE
+                            delete word;
+                            word = lex->next_token();
+
+                            // Parsing of non-terminal PROGRAM succeeded
+                            return true;
+
+                        // We failed to match the second semicolon
+                        } else {
+
+                            string *expected = new string ("';'");
+                            parse_error (expected, word);
+                            return false;
+                        }
+
+                    // We failed to parse BLOCK
+                    } else {
+
+                        return false;
+                    }
+
+                // We failed to parse DECL_LIST
+                } else {
+
+                    return false;
+                }
+
+            // We failed to match the first semicolon
             } else {
 
-              string *expected = new string ("';'");
-              parse_error (expected, word);
-              return false;
+                string *expected = new string ("';'");
+                parse_error (expected, word);
+                return false;
             }
 
-            // We failed to parse BLOCK
-            } else {
-
-                return false;
-          }
-
-        // We failed to parse DECL_LIST
+        // We failed to match an identifier
         } else {
-
-          return false;
+            string *expected = new string ("identifier");
+            parse_error (expected, word);
+            return false;
         }
 
-      // We failed to match the first semicolon
-      } else {
-
-        string *expected = new string ("';'");
+    // We failed to match the keyword program
+    } else {
+        string *expected = new string ("program");
         parse_error (expected, word);
         return false;
-      }
+    }
 
-    // We failed to match an identifier
-    } else {
-    string *expected = new string ("identifier");
-    parse_error (expected, word);
     return false;
-  }
-
-  // We failed to match the keyword program
-  } else {
-    string *expected = new string ("program");
-    parse_error (expected, word);
-    return false;
-  }
-
-  return false;
 }
 
 bool Parser::parse_decl_list()
 {
-
-    printf("Parsing: parse_decl_list, word: %s\n", word->to_string()->c_str());
 
     /* DECL_LIST -> VARIABLE_DECL_LIST PROCEDURE_DECL_LIST
     * Predict (VARIABLE_DECL_LIST PROCEDURE_DECL_LIST) = 
@@ -176,8 +172,6 @@ bool Parser::parse_decl_list()
 }
 
 bool Parser::parse_variable_decl_list() {
-
-    printf("Parsing: parse_variable_decl_list, word: %s\n", word->to_string()->c_str());
 
     // VARIABLE_DECL_LIST -> VARIABLE_DECL ; VARIABLE_DECL_LIST
     //                    -> labmda
@@ -236,8 +230,6 @@ bool Parser::parse_variable_decl_list() {
 
 bool Parser::parse_variable_decl() {
 
-    printf("Parsing: parse_variable_decl, word: %s\n", word->to_string()->c_str());
-
     // VARIABLE_DECL -> IDENTIFIER_LIST : STANDARD_TYPE
     // PREDICT(IDENTIFIER_LIST : STANDARD_TYPE) => {identifier}
 
@@ -285,8 +277,6 @@ bool Parser::parse_variable_decl() {
 }
 
 bool Parser::parse_procedure_decl_list() {
-
-    printf("Parsing: parse_procedure_decl_list, word: %s\n", word->to_string()->c_str());
 
     //PROCEDURE_DECL_LIST -> PROCEDURE_DECL ; PROCEDURE_DECL_LIST
     //                    -> LAMBDA
@@ -347,8 +337,6 @@ bool Parser::parse_procedure_decl_list() {
 }
 
 bool Parser::parse_procedure_decl() {
-
-    printf("Parsing: parse_procedure_decl, word: %s\n", word->to_string()->c_str());
 
     // PROCEDURE_DECL -> procedure identifier ( arg_list ) VARIABLE_DECL_LIST BLOCK
     // PREDICT(procedure identifier ( arg_list ) VARIABLE_DECL_LIST BLOCK) => {procedure}
@@ -441,8 +429,6 @@ bool Parser::parse_procedure_decl() {
 
 bool Parser::parse_arg_list() {
 
-    printf("Parsing: parse_arg_list, word: %s\n", word->to_string()->c_str());
-
     // ARG_LIST -> IDENTIFIER_LIST : STANDARD_TYPE ARG_LIST_HAT
     //          -> LAMDA
     // PREDICT(IDENTIFIER_LIST : STANDARD_TYPE ARG_LIST_HAT) => {identifier}
@@ -500,8 +486,6 @@ bool Parser::parse_arg_list() {
 
 bool Parser::parse_arg_list_hat() {
 
-    printf("Parsing: parse_arg_list_hat, word: %s\n", word->to_string()->c_str());
-
     // ARG_LIST_HAT -> ; ARG_LIST
     //              -> LAMBDA
     // PREDICT(; ARG_LIST) => { ; }
@@ -542,8 +526,6 @@ bool Parser::parse_arg_list_hat() {
 
 bool Parser::parse_identifier_list() {
 
-    printf("Parsing: parse_identifier_list, word: %s\n", word->to_string()->c_str());
-
     // IDENTIFIER_LIST -> identifier IDENTIFIER_LIST_PRM
     // PREDICT(identifier IDENTIFIER_LIST_PRM) => {identifier}
 
@@ -575,8 +557,6 @@ bool Parser::parse_identifier_list() {
 }
 
 bool Parser::parse_identifier_list_prm() {
-
-    printf("Parsing: parse_identifier_list_prm, word: %s\n", word->to_string()->c_str());
 
     //IDENTIFIER_LIST_PRM -> , identifier IDENTIFIER_LIST_PRM
     //                    -> LAMBDA
@@ -631,9 +611,7 @@ bool Parser::parse_identifier_list_prm() {
     return false;
 }
 
-bool Parser::parse_standard_type() {
-
-    printf("Parsing: parse_standard_type, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_standard_type(expr_type &standard_type_type) {
 
     // STANDARD_TYPE -> int
     //               -> bool
@@ -671,8 +649,6 @@ bool Parser::parse_standard_type() {
 }
 
 bool Parser::parse_block() {
-
-    printf("Parsing: parse_block, word: %s\n", word->to_string()->c_str());
 
     // BLOCK -> begin STMT_LIST end
     // PREDICT(begin STMT_LIST end)
@@ -720,8 +696,6 @@ bool Parser::parse_block() {
 }
 
 bool Parser::parse_stmt_list() {
-
-    printf("Parsing: parse_stmt_list, word: %s\n", word->to_string()->c_str());
 
     // STMT_LIST -> STMT ; STMT_LIST_PRM
     // Predict(STMT ; STMT_LIST_PRM) => {if, while, print, identifier}
@@ -778,8 +752,6 @@ bool Parser::parse_stmt_list() {
 }
 
 bool Parser::parse_stmt_list_prm() {
-
-    printf("Parsing: parse_stmt_list_prm, word: %s\n", word->to_string()->c_str());
 
     // STMT_LIST_PRM -> STMT ; STMT_LIST_PRM
     //               -> LAMBDA
@@ -844,8 +816,6 @@ bool Parser::parse_stmt_list_prm() {
 }
 
 bool Parser::parse_stmt() {
-
-    printf("Parsing: parse_stmt, word: %s\n", word->to_string()->c_str());
 
     // STMT -> IF_STMT
     //      -> WHILE_STMT
@@ -922,9 +892,7 @@ bool Parser::parse_stmt() {
     return false;
 }
 
-bool Parser::parse_stmt_ass_proc_tail() {
-
-    printf("Parsing: parse_stmt_ass_proc_tail, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_stmt_ass_proc_tail(expr_type &stmt_ass_proc_tail_type) {
 
     // STMT_ASS_PROC_TAIL -> ASSIGNMENT_STMT_TAIL
     //                    -> PROCEDURE_CALL_STMT_TAIL
@@ -968,9 +936,7 @@ bool Parser::parse_stmt_ass_proc_tail() {
     return false;
 }
 
-bool Parser::parse_assignment_stmt_tail() {
-
-    printf("Parsing: parse_assignment_stmt_tail, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type) {
 
     // ASSIGNMENT_STMT_TAIL -> := EXPR
     // PREDICT(:= EXPR) => {:=}
@@ -1004,8 +970,6 @@ bool Parser::parse_assignment_stmt_tail() {
 }
 
 bool Parser::parse_if_stmt() {
-
-    printf("Parsing: parse_if_stmt, word: %s\n", word->to_string()->c_str());
 
     // IF_STMT -> if EXPR then BLOCK IF_STMT_HAT
     // PREDICT(if EXPR then BLOCK IF_STMT_HAT) => {if}
@@ -1068,8 +1032,6 @@ bool Parser::parse_if_stmt() {
 
 bool Parser::parse_if_stmt_hat() {
 
-    printf("Parsing: parse_if_stmt_hat, word: %s\n", word->to_string()->c_str());
-
     // IF_STMT_HAT -> else BLOCK
     //             -> LAMBDA
     // PREDICT(else BLOCK) => {else}
@@ -1111,8 +1073,6 @@ bool Parser::parse_if_stmt_hat() {
 
 bool Parser::parse_while_stmt() {
 
-    printf("Parsing: parse_while_stmt, word: %s\n", word->to_string()->c_str());
-
     // WHILE_STMT -> while EXPR BLOCK
     // PREDICT(while EXPR BLOCK) => {while}
 
@@ -1153,8 +1113,6 @@ bool Parser::parse_while_stmt() {
 
 bool Parser::parse_print_stmt() {
 
-    printf("Parsing: parse_print_stmt, word: %s\n", word->to_string()->c_str());
-
     // PRINT_STMT -> print EXPR
     // PREDICT(print EXPR) => {print}
 
@@ -1187,8 +1145,6 @@ bool Parser::parse_print_stmt() {
 }
 
 bool Parser::parse_procedure_call_stmt_tail() {
-
-    printf("Parsing: parse_procedure_call_stmt_tail, word: %s\n", word->to_string()->c_str());
 
     // PROCEDURE_CALL_STMT_TAIL -> ( EXPR_LIST )
     // PREDICT( ( EXPR_LIST )) => {(}
@@ -1235,8 +1191,6 @@ bool Parser::parse_procedure_call_stmt_tail() {
 }
 
 bool Parser::parse_expr_list() {
-
-    printf("Parsing: parse_expr_list, word: %s\n", word->to_string()->c_str());
 
     // EXPR_LIST -> EXPR EXPR_LIST_HAT
     //           -> LAMBDA
@@ -1288,8 +1242,6 @@ bool Parser::parse_expr_list() {
 
 bool Parser::parse_expr_list_hat() {
 
-    printf("Parsing: parse_expr_list_hat, word: %s\n", word->to_string()->c_str());
-
     // EXPR_LIST_HAT -> , EXPR_LIST
     //               -> LAMBDA
     // PREDICT(, EXPR_LIST) => {,}
@@ -1328,9 +1280,7 @@ bool Parser::parse_expr_list_hat() {
     return false;
 }
 
-bool Parser::parse_expr() {
-
-    printf("Parsing: parse_expr, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_expr(expr_type &expr_type) {
 
     // EXPR -> SIMPLE_EXPR EXPR_HAT
     // PREDICT (SIMPLE_EXPR EXPR_HAT) => {identifier, num, (, +, -, not}
@@ -1374,9 +1324,7 @@ bool Parser::parse_expr() {
     return false;
 }
 
-bool Parser::parse_simple_expr() {
-
-    printf("Parsing: parse_simple_expr, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_simple_expr(expr_type &simple_expr_type) {
 
     // SIMPLE_EXPR -> TERM SIMPLE_EXPR_PRM
     // PREDICT(TERM SIMPLE_EXPR_PRM) => {identifier, num, (, +, -, not}
@@ -1420,9 +1368,7 @@ bool Parser::parse_simple_expr() {
     return false;
 }
 
-bool Parser::parse_expr_hat() {
-
-    printf("Parsing: parse_expr_hat, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_expr_hat(expr_type &expr_hat_type) {
 
     // EXPR_HAT -> relop SIMPLE_EXPR
     //          -> LAMBDA
@@ -1466,9 +1412,7 @@ bool Parser::parse_expr_hat() {
     return false;
 }
 
-bool Parser::parse_simple_expr_prm() {
-
-    printf("Parsing: parse_simple_expr_prm, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
 
     // SIMPLE_EXPR_PRM -> addop TERM SIMPLE_EXPR_PRM
     //                 -> LAMBDA
@@ -1526,9 +1470,7 @@ bool Parser::parse_simple_expr_prm() {
     return false;
 }
 
-bool Parser::parse_term() {
-
-    printf("Parsing: parse_term, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_term(expr_type &term_type) {
 
     // TERM -> FACTOR TERM_PRM
     // PREDICT(FACTOR TERM_PRM) => {identifier, num, (, +, -, not}
@@ -1572,9 +1514,7 @@ bool Parser::parse_term() {
     return false;
 }
 
-bool Parser::parse_term_prm() {
-
-    printf("Parsing: parse_term_prm, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_term_prm(expr_type &term_prm_type) {
 
     // TERM_PRM -> mulop FACTOR TERM_PRM
     //          -> LAMBDA
@@ -1633,9 +1573,7 @@ bool Parser::parse_term_prm() {
     return false;
 }
 
-bool Parser::parse_factor() {
-
-    printf("Parsing: parse_factor, word: %s\n", word->to_string()->c_str());
+bool Parser::parse_factor(expr_type &factor_type) {
 
     // FACTOR -> identifier
     //        -> num
@@ -1742,8 +1680,6 @@ bool Parser::parse_factor() {
 }
 
 bool Parser::parse_sign() {
-
-    printf("Parsing: parse_sign, word: %s\n", word->to_string()->c_str());
 
     // SIGN -> +
     //      -> -
