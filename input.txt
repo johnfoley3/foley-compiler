@@ -1,103 +1,44 @@
-# this is a comment
-prog
-progr
-progra
-program<
-programs
+program looper;
+	# This is a real trupl program.
+	# Here's the declarative part.
+	a: int;
+	b: bool;
+	c, d: int;
 
-p
-pr
-pri
-prin
-printf
-print/
+	procedure john ()
+		sean : int;
+		begin
+			a := 2;
+		end;
 
-proc
-proce
-proced
-procedu
-procedur-
-procedure
-
-n
-no
-not
-nots
-
-i
-in
-int
-if
-ints
-ifs
-
-b
-bo
-boo
-bool
-bools
-be
-beg
-begi
 begin
-begins
+	# Here is the executable part.
+	a := 0;
+	# There are no boolean constants, so we have to init bools like this:
+	b := 0 = 0;
 
-t
-th
-the
-then
-thens
+	while b begin
+		if a <= 2 then begin
+			a := (a + 1) * 3;
+		end # No ';' at the end of blocks
+		else begin
+			a := (a - 1) * 2;
+		end; # This ';' ends the if stmt
 
-e
-en
-end
-ends
-el
-els
-else
-elses
+		b := a < 10;
 
-w
-wh
-whi
-whil
-while
-whiles
+		print a;
+	end; # end while
 
-;
-:
-:=
-,
-=
-<
-<>
->
-<=
->=
-+
--
-or
-and
-o
-a
-an
-ands
-ors
-*
-12
-123
-;and
+	while c begin
 
-iprogramprocedurethenelsewhileprintnotif
+		while d begin 
 
-;:,:=()
+			while (b+2) begin
+				a();
+			end;
+		end;
+	end;
 
-=<>>>=<<=
-
-andor
-orand
-10john
-john10
-# This is also a comment#
-hello ;
-hello;
+end; # end program
+		

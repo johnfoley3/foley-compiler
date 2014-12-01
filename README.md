@@ -9,4 +9,4 @@ Simply type
 	make
 in the directory where the Makefile is located, along with all of the source files.
 
-Then run ./main -inputfile- to see the lexical analysis results.
+Then run ./main 
