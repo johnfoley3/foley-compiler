@@ -4,13 +4,14 @@ program looper;
 	a: int;
 	b: bool;
 
-	procedure john( j : int) 
+	procedure john( j,g : int; s : bool) 
 	a: int;
 	b: bool;
 	begin
 		while b begin
 			a := 0;
 			j := (j + 1);
+			s := 4 < 5 + 3;
 		end;
 	end;
 
