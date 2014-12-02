@@ -15,6 +15,7 @@ Parser::Parser(Scanner *s) {
     current_env = NULL;
     main_env = NULL;
     parm_pos = -1;
+    left_side = NULL;
 }
 
 Parser::~Parser() {
@@ -488,7 +489,7 @@ bool Parser::parse_arg_list() {
 
                 if (parse_standard_type(standard_type_type)) {
 
-                    stab->update_type(standard_type_type);
+                    stab->update_type_with_position(standard_type_type, parm_pos);
 
                     if (parse_arg_list_hat()) {
 
@@ -934,12 +935,14 @@ bool Parser::parse_stmt() {
         // match identifier
     } else if (word->get_token_type() == TOKEN_ID) {
 
-        if (! stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
+        left_side = static_cast<IdToken *>(word)->get_attribute();
 
+        if (! ((stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env))
+            || (stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), main_env)))) {
+
+            cout << "sup" << endl;
             undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);
         }
-
-        string *left_side = static_cast<IdToken *>(word)->get_attribute();
 
         // ADVANCE
         delete word;
@@ -1320,7 +1323,8 @@ bool Parser::parse_expr_list() {
 
         if (parse_expr(the_expr_type)) {
 
-            if (the_expr_type != stab->get_type(current_env, parm_pos)) {
+            printf("current env: %s\n", current_env->c_str());
+            if (the_expr_type != stab->get_type(left_side, parm_pos)) {
 
                 type_error(word);
             }

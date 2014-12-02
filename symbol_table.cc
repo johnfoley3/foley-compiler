@@ -32,7 +32,7 @@ void Symbol_Table::install (string *id, string *env,
 			    expr_type t)
 {
 
-  printf("%s is being installed\n", id->c_str() );
+  printf("%s is being installed in environment %s\n", id->c_str(), env->c_str());
   // Install an identifier from environment env with type
   // t into the symbol table.
   if (size == MAX_SYMBOLS) {
@@ -99,6 +99,20 @@ expr_type Symbol_Table::get_type (string *env, int position)
   }
 
   return GARBAGE_T;
+}
+
+void Symbol_Table::update_type_with_position (expr_type standard_type_type, int &parm_pos)
+{
+  for (int i = 0; i < size; i++) {
+    if (table[i].type == UNKNOWN_T) {
+      table[i].type = standard_type_type;
+      table[i].position = parm_pos;
+      parm_pos++;
+
+      printf("This is the expr_id: %s, the expr_type %i, and the parm position: %i\n", table[i].id->c_str(),
+                  table[i].type, table[i].position);
+    }
+  }
 }
 
 void Symbol_Table::update_type (expr_type standard_type_type)

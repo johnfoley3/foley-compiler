@@ -68,6 +68,8 @@ class Parser {
       Token *word;
 
       Symbol_Table *stab;
+
+      string * left_side;
   
       // Print out a parse error message:  "Expected" expected,
       // "found", found.  This method should delete the string
