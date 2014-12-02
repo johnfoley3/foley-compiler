@@ -51,7 +51,7 @@ class Parser {
       bool parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type);
       bool parse_procedure_call_stmt_tail();
       bool parse_if_stmt_hat();
-      bool parse_expr(expr_type &expr_type);
+      bool parse_expr(expr_type &the_expr_type);
       bool parse_expr_list();
       bool parse_expr_list_hat();
       bool parse_simple_expr(expr_type &simple_expr_type);
@@ -66,6 +66,8 @@ class Parser {
       Scanner *lex;
       // The current token the parser is looking at
       Token *word;
+
+      Symbol_Table *stab;
   
       // Print out a parse error message:  "Expected" expected,
       // "found", found.  This method should delete the string
@@ -88,7 +90,6 @@ class Parser {
 
       // Throws the undeclared id error
       void undeclared_id_error(string *id, string *env);
-  
 };
 
 #endif

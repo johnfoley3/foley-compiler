@@ -1,31 +1,39 @@
 #include "parser.h"
 #include <stdio.h>
 
-Parser::Parser(Scanner *s) 
-{
-  lex = s;
-  // Init the word variable.
-  word = lex->next_token();
+Parser::Parser(Scanner *s) {
+
+    lex = s;
+
+    // Init the word variable.
+    word = lex->next_token();
+
+    // Symbol table
+    stab = new Symbol_Table();
+
+    // Init the environments to null
+    current_env = NULL;
+    main_env = NULL;
+    parm_pos = -1;
 }
 
-Parser::~Parser() 
-{
+Parser::~Parser() {
 
-  if (lex != NULL) {
+    if (lex != NULL) {
 
-    delete lex;
-  }
+        delete lex;
+    }
 
-  if (word != NULL) {
+    if (word != NULL) {
 
-    delete word;
-  }
+        delete word;
+    }
 }
 
 void Parser::parse_error (string *expected, Token *found) {
 
-  printf("Syntax error: Expected %s, found %s\n", expected->c_str(), found->to_string()->c_str());
-  delete expected;
+    printf("Syntax error: Expected %s, found %s\n", expected->c_str(), found->to_string()->c_str());
+    delete expected;
 }
 
 // If we have parsed the entire program, then word
@@ -56,6 +64,13 @@ bool Parser::parse_program()
 
         // Match identifier
         if (word->get_token_type() == TOKEN_ID) {	
+
+            stab->install(static_cast<IdToken *>(word)->get_attribute(), new string("_EXTERNAL"), PROGRAM_T);
+
+            // We only need to set this once.
+            main_env = static_cast<IdToken *>(word)->get_attribute();
+
+            current_env = static_cast<IdToken *>(word)->get_attribute();
 
             // ADVANCE
             delete word; 
@@ -230,6 +245,8 @@ bool Parser::parse_variable_decl_list() {
 
 bool Parser::parse_variable_decl() {
 
+    expr_type standard_type_type;
+
     // VARIABLE_DECL -> IDENTIFIER_LIST : STANDARD_TYPE
     // PREDICT(IDENTIFIER_LIST : STANDARD_TYPE) => {identifier}
 
@@ -246,7 +263,9 @@ bool Parser::parse_variable_decl() {
                 delete word;
                 word = lex->next_token();
 
-                if (parse_standard_type()) {
+                if (parse_standard_type(standard_type_type)) {
+
+                    stab->update_type(standard_type_type);
 
                     //Successfully parsed variable decl
                     return true;
@@ -352,6 +371,12 @@ bool Parser::parse_procedure_decl() {
         // match identifier
         if (word->get_token_type() == TOKEN_ID) {
 
+            stab->install(static_cast<IdToken *>(word)->get_attribute(), current_env, PROCEDURE_T);
+
+            current_env = static_cast<IdToken *>(word)->get_attribute();
+
+            parm_pos = 0;
+
             // ADVANCE
             delete word;
             word = lex->next_token();
@@ -377,6 +402,8 @@ bool Parser::parse_procedure_decl() {
                         if (parse_variable_decl_list()) {
 
                             if (parse_block()) {
+
+                                current_env = main_env;
 
                                 // successfully parsed procedure_decl
                                 return true;
@@ -429,6 +456,8 @@ bool Parser::parse_procedure_decl() {
 
 bool Parser::parse_arg_list() {
 
+    expr_type standard_type_type;
+
     // ARG_LIST -> IDENTIFIER_LIST : STANDARD_TYPE ARG_LIST_HAT
     //          -> LAMDA
     // PREDICT(IDENTIFIER_LIST : STANDARD_TYPE ARG_LIST_HAT) => {identifier}
@@ -443,7 +472,9 @@ bool Parser::parse_arg_list() {
             delete word;
             word = lex->next_token();
 
-            if (parse_standard_type()) {
+            if (parse_standard_type(standard_type_type)) {
+
+                stab->update_type(standard_type_type);
 
                 if (parse_arg_list_hat()) {
 
@@ -532,6 +563,10 @@ bool Parser::parse_identifier_list() {
     //match identifier
     if (word->get_token_type() == TOKEN_ID) {
 
+        // install the new variable to the stab
+        stab->install(static_cast<IdToken *>(word)->get_attribute(),
+                        current_env, UNKNOWN_T);
+
         // ADVANCE
         delete word;
         word = lex->next_token();
@@ -572,6 +607,10 @@ bool Parser::parse_identifier_list_prm() {
 
         // match identifier
         if (word->get_token_type() == TOKEN_ID) {
+
+            // install the new variable to the stab
+            stab->install(static_cast<IdToken *>(word)->get_attribute(),
+                            current_env, UNKNOWN_T);
 
             // ADVANCE
             delete word;
@@ -620,6 +659,8 @@ bool Parser::parse_standard_type(expr_type &standard_type_type) {
     if (word->get_token_type() == TOKEN_KEYWORD
         && static_cast<KeywordToken *>(word)->get_attribute() == KW_INT) {
 
+        standard_type_type = INT_T;
+
         // ADVANCE
         delete word;
         word = lex->next_token();
@@ -630,6 +671,8 @@ bool Parser::parse_standard_type(expr_type &standard_type_type) {
         // match bool
     } else if (word->get_token_type() == TOKEN_KEYWORD
         && static_cast<KeywordToken *>(word)->get_attribute() == KW_BOOL) {
+
+        standard_type_type = BOOL_T;
 
         // ADVANCE
         delete word;
@@ -817,6 +860,8 @@ bool Parser::parse_stmt_list_prm() {
 
 bool Parser::parse_stmt() {
 
+    expr_type stmt_ass_proc_tail_type;
+
     // STMT -> IF_STMT
     //      -> WHILE_STMT
     //      -> PRINT_STMT
@@ -869,11 +914,23 @@ bool Parser::parse_stmt() {
         // match identifier
     } else if (word->get_token_type() == TOKEN_ID) {
 
+        if (! is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
+
+            undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);
+        }
+
+        string *left_side = static_cast<IdToken *>(word)->get_attribute();
+
         // ADVANCE
         delete word;
         word = lex->next_token();
 
-        if (parse_stmt_ass_proc_tail()) {
+        if (parse_stmt_ass_proc_tail(stmt_ass_proc_tail_type)) {
+
+            if (stab->get_type(left_side, current_env) != stmt_ass_proc_tail_type) {
+
+                type_error(left_side);
+            }
 
             // successfully parsed stmt
             return true;
@@ -902,7 +959,9 @@ bool Parser::parse_stmt_ass_proc_tail(expr_type &stmt_ass_proc_tail_type) {
     if (word->get_token_type() == TOKEN_PUNC 
                 && static_cast<PuncToken *>(word)->get_attribute() == PUNC_ASSIGN) {
 
-        if (parse_assignment_stmt_tail()) {
+        if (parse_assignment_stmt_tail(assignment_stmt_tail_type)) {
+
+            stmt_ass_proc_tail_type = assignment_stmt_tail_type;
 
             // successfully parsed stmt_ass_proc_tail
             return true;
@@ -917,6 +976,8 @@ bool Parser::parse_stmt_ass_proc_tail(expr_type &stmt_ass_proc_tail_type) {
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_OPEN) {
 
         if (parse_procedure_call_stmt_tail()) {
+
+            stmt_ass_proc_tail_type = PROCEDURE_T;
 
             // successfully parsed stmt_ass_proc_tail
             return true;
@@ -1280,7 +1341,9 @@ bool Parser::parse_expr_list_hat() {
     return false;
 }
 
-bool Parser::parse_expr(expr_type &expr_type) {
+bool Parser::parse_expr(expr_type &the_expr_type) {
+
+    expr_type simple_expr_type, expr_hat_type;
 
     // EXPR -> SIMPLE_EXPR EXPR_HAT
     // PREDICT (SIMPLE_EXPR EXPR_HAT) => {identifier, num, (, +, -, not}
@@ -1297,9 +1360,21 @@ bool Parser::parse_expr(expr_type &expr_type) {
         || (word->get_token_type() == TOKEN_ADDOP 
             && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
 
-        if (parse_simple_expr()) {
+        if (parse_simple_expr(simple_expr_type)) {
 
-            if (parse_expr_hat()) {
+            if (parse_expr_hat(expr_hat_type)) {
+
+                // calculate the expr_type
+                if (expr_hat_type == NO_T) {
+
+                    the_expr_type = simple_expr_type;
+                } else if (simple_expr_type == INT_T && expr_hat_type == INT_T) {
+
+                    the_expr_type = BOOL_T;
+                } else {
+
+                    type_error(word);
+                }
 
                 // successfully parsed expr
                 return true;
