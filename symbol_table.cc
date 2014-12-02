@@ -1,4 +1,5 @@
 #include "symbol_table.h"
+#include <stdio.h>
 
 Symbol_Table::Symbol_Table()
 {
