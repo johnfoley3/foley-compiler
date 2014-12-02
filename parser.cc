@@ -1713,6 +1713,8 @@ bool Parser::parse_term(expr_type &term_type) {
 
 bool Parser::parse_term_prm(expr_type &term_prm_type) {
 
+    expr_type term_prm_type_1, factor_type;
+
     // TERM_PRM -> mulop FACTOR TERM_PRM
     //          -> LAMBDA
     // PREDICT(mulop FACTOR TERM_PRM) => {mulop}
@@ -1724,9 +1726,39 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
         delete word;
         word = lex->next_token(); 
 
-        if (parse_factor()) {
+        if (parse_factor(factor_type)) {
 
-            if (parse_term_prm()) {
+            if (parse_term_prm(term_prm_type_1)) {
+
+                if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL)
+                    || (static_cast<MulopToken *>(word)->get_attribute() == MULOP_DIV)) {
+
+                    if ((term_prm_type_1 == NO_T) && (factor_type == INT_T)) {
+
+                        term_prm_type = INT_T;
+                    } else if ((factor_type == INT_T) && (factor_type == term_prm_type_1)) {
+
+                        term_prm_type = INT_T;
+                    } else {
+
+                        type_error(word);
+                    }
+                } else if (static_cast<MulopToken *>(word)->get_attribute() == MULOP_AND) {
+
+                    if ((term_prm_type_1 == NO_T) && (factor_type == BOOL_T)) {
+
+                        term_prm_type = BOOL_T;
+                    } else if ((factor_type == BOOL_T) && (factor_type == term_prm_type_1)) {
+
+                        term_prm_type = BOOL_T;
+                    } else {
+
+                        type_error(word);
+                    }
+                } else {
+
+                    type_error(word);
+                }
 
                 // successfully parsed term_prm
                 return true;
@@ -1757,6 +1789,8 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
         || (word->get_token_type() == TOKEN_PUNC 
             && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE)) {
 
+        term_prm_type = NO_T;
+
             // successfully parsed lambda
             return true;
     } else {
@@ -1772,6 +1806,8 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
 
 bool Parser::parse_factor(expr_type &factor_type) {
 
+    expr_type the_expr_type, factor_type_1;
+
     // FACTOR -> identifier
     //        -> num
     //        -> ( EXPR )
@@ -1780,6 +1816,14 @@ bool Parser::parse_factor(expr_type &factor_type) {
 
     // match identifier
     if (word->get_token_type() == TOKEN_ID) {
+
+        if (is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
+
+            factor_type = get_type(static_cast<IdToken *>(word)->get_attribute(), current_env);
+        } else {
+
+            undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);
+        }
 
         // ADVANCE
         delete word;
@@ -1790,6 +1834,8 @@ bool Parser::parse_factor(expr_type &factor_type) {
 
     // match num
     } else if (word->get_token_type() == TOKEN_NUM) {
+
+        factor_type = INT_T;
 
         // ADVANCE
         delete word;
@@ -1806,7 +1852,9 @@ bool Parser::parse_factor(expr_type &factor_type) {
         delete word;
         word = lex->next_token(); 
 
-        if (parse_expr()) {
+        if (parse_expr(the_expr_type)) {
+
+            factor_type = the_expr_type;
 
             if (word->get_token_type() == TOKEN_PUNC 
                 && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
@@ -1835,11 +1883,21 @@ bool Parser::parse_factor(expr_type &factor_type) {
     } else if (word->get_token_type() == TOKEN_KEYWORD
         && static_cast<KeywordToken *>(word)->get_attribute() == KW_NOT) {
 
+
+
         // ADVANCE
         delete word;
         word = lex->next_token(); 
 
-        if (parse_factor()) {
+        if (parse_factor(factor_type_1)) {
+
+            if (factor_type_1 == BOOL_T) {
+
+                factor_type = BOOL_T;
+            } else {
+
+                type_error(word);
+            }
 
             return true;
         } else {
@@ -1858,7 +1916,15 @@ bool Parser::parse_factor(expr_type &factor_type) {
         delete word;
         word = lex->next_token(); 
 
-        if (parse_factor()) {
+        if (parse_factor(factor_type_1)) {
+
+            if (factor_type_1 == INT_T) {
+
+                factor_type = INT_T;
+            } else {
+
+                type_error(word);
+            }
 
             return true;
         } else {
