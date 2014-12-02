@@ -1418,7 +1418,7 @@ bool Parser::parse_expr(expr_type &the_expr_type) {
                 if (expr_hat_type == NO_T) {
 
                     the_expr_type = simple_expr_type;
-                } else if (simple_expr_type == INT_T && expr_hat_type == INT_T) {
+                } else if ((simple_expr_type == INT_T) && (expr_hat_type == INT_T)) {
 
                     the_expr_type = BOOL_T;
                 } else {
@@ -1547,6 +1547,8 @@ bool Parser::parse_expr_hat(expr_type &expr_hat_type) {
             || (word->get_token_type() == TOKEN_PUNC 
                 && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE)) {
 
+        expr_hat_type = NO_T;
+
         // successfully parsed lambda
         return true;
     } else {
@@ -1562,7 +1564,7 @@ bool Parser::parse_expr_hat(expr_type &expr_hat_type) {
 
 bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
 
-    expr_type term_type, simple_expr_prm_type_1;
+    expr_type term_type, simple_expr_prm_type_1, addop_type;
 
     // SIMPLE_EXPR_PRM -> addop TERM SIMPLE_EXPR_PRM
     //                 -> LAMBDA
@@ -1570,6 +1572,18 @@ bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
 
     // match addop
     if (word->get_token_type() == TOKEN_ADDOP) {
+
+        if ((static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
+                || (static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+
+            addop_type = INT_T;
+        } else if (static_cast<AddopToken *>(word)->get_attribute() == ADDOP_OR) {
+
+            addop_type = BOOL_T;
+        } else {
+
+            type_error(word);
+        }
 
         // ADVANCE
         delete word;
@@ -1581,45 +1595,15 @@ bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
 
                 if (simple_expr_prm_type_1 == NO_T) {
 
-                    if ((static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
-                        || (static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+                    if (addop_type == term_type) {
 
-                        if (term_type == INT_T) {
-
-                            simple_expr_prm_type = INT_T;
-                        } else {
-
-                            type_error(word);
-                        }
-                    } else if (static_cast<AddopToken *>(word)->get_attribute() == ADDOP_OR) {
-
-                        if (term_type == BOOL_T) {
-
-                            simple_expr_prm_type = BOOL_T;
-                        }
+                        simple_expr_prm_type = addop_type;
                     } else {
-
                         type_error(word);
                     }
-                } else if ((static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD)
-                        || (static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
+                } else if ((addop_type == term_type) && (term_type == simple_expr_prm_type_1)) {
 
-                    if (term_type == INT_T && term_type == simple_expr_prm_type_1) {
-
-                        simple_expr_prm_type = INT_T;
-                    } else {
-
-                        type_error(word);
-                    }
-                } else if (static_cast<AddopToken *>(word)->get_attribute() == ADDOP_OR) {
-
-                    if (term_type == BOOL_T && term_type == simple_expr_prm_type_1) {
-
-                        simple_expr_prm_type = BOOL_T;
-                    } else {
-
-                        type_error(word);
-                    }
+                    simple_expr_prm_type = addop_type;
                 } else {
 
                     type_error(word);
@@ -1687,12 +1671,15 @@ bool Parser::parse_term(expr_type &term_type) {
         || (word->get_token_type() == TOKEN_ADDOP 
             && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
 
+        cout << "about to parse factor" << endl;
         if (parse_factor(factor_type)) {
+                printf("This is the word after we parse factor: %s\n", word->to_string()->c_str());
 
             if (parse_term_prm(term_prm_type)) {
 
                 if (term_prm_type == NO_T) {
 
+                    cout << "gets here" << endl;
                     term_type = factor_type;
                 } else if (factor_type == term_prm_type) {
 
@@ -1727,7 +1714,7 @@ bool Parser::parse_term(expr_type &term_type) {
 
 bool Parser::parse_term_prm(expr_type &term_prm_type) {
 
-    expr_type term_prm_type_1, factor_type;
+    expr_type term_prm_type_1, factor_type, mulop_type;
 
     // TERM_PRM -> mulop FACTOR TERM_PRM
     //          -> LAMBDA
@@ -1735,6 +1722,18 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
 
     // match mulop
     if (word->get_token_type() == TOKEN_MULOP) {
+
+        if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL)
+            || (static_cast<MulopToken *>(word)->get_attribute() == MULOP_DIV)) {
+
+            mulop_type = INT_T;
+        } else if (static_cast<MulopToken *>(word)->get_attribute() == MULOP_AND) {
+
+            mulop_type = BOOL_T;
+        } else {
+
+            type_error(word);
+        }
 
         // ADVANCE
         delete word;
@@ -1744,31 +1743,12 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
 
             if (parse_term_prm(term_prm_type_1)) {
 
-                if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL)
-                    || (static_cast<MulopToken *>(word)->get_attribute() == MULOP_DIV)) {
+                if ((term_prm_type_1 == NO_T) && (mulop_type == factor_type)) {
 
-                    if ((term_prm_type_1 == NO_T) && (factor_type == INT_T)) {
+                    term_prm_type = mulop_type;
+                } else if ((mulop_type == factor_type) && (factor_type == term_prm_type_1)) {
 
-                        term_prm_type = INT_T;
-                    } else if ((factor_type == INT_T) && (factor_type == term_prm_type_1)) {
-
-                        term_prm_type = INT_T;
-                    } else {
-
-                        type_error(word);
-                    }
-                } else if (static_cast<MulopToken *>(word)->get_attribute() == MULOP_AND) {
-
-                    if ((term_prm_type_1 == NO_T) && (factor_type == BOOL_T)) {
-
-                        term_prm_type = BOOL_T;
-                    } else if ((factor_type == BOOL_T) && (factor_type == term_prm_type_1)) {
-
-                        term_prm_type = BOOL_T;
-                    } else {
-
-                        type_error(word);
-                    }
+                    term_prm_type = mulop_type;
                 } else {
 
                     type_error(word);
@@ -1849,6 +1829,7 @@ bool Parser::parse_factor(expr_type &factor_type) {
     // match num
     } else if (word->get_token_type() == TOKEN_NUM) {
 
+        cout << "We found a token num" << endl;
         factor_type = INT_T;
 
         // ADVANCE
@@ -1868,10 +1849,10 @@ bool Parser::parse_factor(expr_type &factor_type) {
 
         if (parse_expr(the_expr_type)) {
 
-            factor_type = the_expr_type;
-
             if (word->get_token_type() == TOKEN_PUNC 
                 && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
+
+                factor_type = the_expr_type;
 
                 // ADVANCE
                 delete word;

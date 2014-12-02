@@ -31,6 +31,8 @@ Symbol_Table::~Symbol_Table()
 void Symbol_Table::install (string *id, string *env, 
 			    expr_type t)
 {
+
+  printf("%s is being installed\n", id->c_str() );
   // Install an identifier from environment env with type
   // t into the symbol table.
   if (size == MAX_SYMBOLS) {
