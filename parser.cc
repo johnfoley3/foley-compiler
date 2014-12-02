@@ -477,38 +477,46 @@ bool Parser::parse_arg_list() {
     // match identifier
     if (word->get_token_type() == TOKEN_ID) {
 
-        if (word->get_token_type() == TOKEN_PUNC
-            && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COLON) {
+        if (parse_identifier_list()) {
 
-            // ADVANCE
-            delete word;
-            word = lex->next_token();
+            if (word->get_token_type() == TOKEN_PUNC
+                && static_cast<PuncToken *>(word)->get_attribute() == PUNC_COLON) {
 
-            if (parse_standard_type(standard_type_type)) {
+                // ADVANCE
+                delete word;
+                word = lex->next_token();
 
-                stab->update_type(standard_type_type);
+                if (parse_standard_type(standard_type_type)) {
 
-                if (parse_arg_list_hat()) {
+                    stab->update_type(standard_type_type);
 
-                    // successfully parsed arg_list
-                    return true;
+                    if (parse_arg_list_hat()) {
+
+                        // successfully parsed arg_list
+                        return true;
+                    } else {
+
+                        // failed to parse arg_list_hat
+                        return false;
+                    }
                 } else {
 
-                    // failed to parse arg_list_hat
+                    // failed to parse standard type
                     return false;
                 }
             } else {
 
-                // failed to parse standard type
+                // failed to find :
+                string *expected = new string ("\":\"");
+                parse_error(expected, word);
                 return false;
             }
         } else {
 
-            // failed to find :
-            string *expected = new string ("\":\"");
-            parse_error(expected, word);
+            // failed to parse identifier_list
             return false;
         }
+        
     // PREDICT(ARGS_LIST -> LAMBDA) => { ) }
     // match )
     } else if (word->get_token_type() == TOKEN_PUNC 
@@ -1671,15 +1679,12 @@ bool Parser::parse_term(expr_type &term_type) {
         || (word->get_token_type() == TOKEN_ADDOP 
             && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
 
-        cout << "about to parse factor" << endl;
         if (parse_factor(factor_type)) {
-                printf("This is the word after we parse factor: %s\n", word->to_string()->c_str());
 
             if (parse_term_prm(term_prm_type)) {
 
                 if (term_prm_type == NO_T) {
 
-                    cout << "gets here" << endl;
                     term_type = factor_type;
                 } else if (factor_type == term_prm_type) {
 
@@ -1829,7 +1834,6 @@ bool Parser::parse_factor(expr_type &factor_type) {
     // match num
     } else if (word->get_token_type() == TOKEN_NUM) {
 
-        cout << "We found a token num" << endl;
         factor_type = INT_T;
 
         // ADVANCE

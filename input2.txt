@@ -4,6 +4,16 @@ program looper;
 	a: int;
 	b: bool;
 
+	procedure john( j : int) 
+	a: int;
+	b: bool;
+	begin
+		while b begin
+			a := 0;
+			j := (j + 1);
+		end;
+	end;
+
 begin
 	# Here is the executable part.
 	a := 0;
