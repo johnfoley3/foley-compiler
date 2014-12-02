@@ -940,7 +940,6 @@ bool Parser::parse_stmt() {
         if (! ((stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env))
             || (stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), main_env)))) {
 
-            cout << "sup" << endl;
             undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);
         }
 
@@ -1611,6 +1610,7 @@ bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
 
                         simple_expr_prm_type = addop_type;
                     } else {
+
                         type_error(word);
                     }
                 } else if ((addop_type == term_type) && (term_type == simple_expr_prm_type_1)) {
@@ -1820,9 +1820,13 @@ bool Parser::parse_factor(expr_type &factor_type) {
     // match identifier
     if (word->get_token_type() == TOKEN_ID) {
 
-        if (stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
+        if ((stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env))) {
 
             factor_type = stab->get_type(static_cast<IdToken *>(word)->get_attribute(), current_env);
+
+        } else if (stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), main_env)) {
+
+            factor_type = stab->get_type(static_cast<IdToken *>(word)->get_attribute(), main_env);
         } else {
 
             undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);

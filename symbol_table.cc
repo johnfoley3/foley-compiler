@@ -120,6 +120,9 @@ void Symbol_Table::update_type (expr_type standard_type_type)
   for (int i = 0; i < size; i++) {
     if (table[i].type == UNKNOWN_T) {
       table[i].type = standard_type_type;
+
+      printf("This is the expr_id: %s, the expr_type %i, and the parm position: %i\n", table[i].id->c_str(),
+                  table[i].type, table[i].position);
     }
   }
 }
