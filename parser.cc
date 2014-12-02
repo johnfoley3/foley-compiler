@@ -36,6 +36,18 @@ void Parser::parse_error (string *expected, Token *found) {
     delete expected;
 }
 
+void Parser::type_error(Token *where) {
+
+    printf("Type error at %s\n", where->to_string()->c_str());
+    exit(0);
+}
+
+void Parser::undeclared_id_error(string *id, string *env) {
+
+    printf("%s has not been declared in the scope %s\n", id->c_str(), env->c_str());
+    exit(0);
+}
+
 // If we have parsed the entire program, then word
 // should be the EOF Token.  This function tests
 // that condition.
@@ -914,7 +926,7 @@ bool Parser::parse_stmt() {
         // match identifier
     } else if (word->get_token_type() == TOKEN_ID) {
 
-        if (! is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
+        if (! stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
 
             undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);
         }
@@ -929,7 +941,7 @@ bool Parser::parse_stmt() {
 
             if (stab->get_type(left_side, current_env) != stmt_ass_proc_tail_type) {
 
-                type_error(left_side);
+                type_error(word);
             }
 
             // successfully parsed stmt
@@ -950,6 +962,8 @@ bool Parser::parse_stmt() {
 }
 
 bool Parser::parse_stmt_ass_proc_tail(expr_type &stmt_ass_proc_tail_type) {
+
+    expr_type assignment_stmt_tail_type;
 
     // STMT_ASS_PROC_TAIL -> ASSIGNMENT_STMT_TAIL
     //                    -> PROCEDURE_CALL_STMT_TAIL
@@ -999,7 +1013,7 @@ bool Parser::parse_stmt_ass_proc_tail(expr_type &stmt_ass_proc_tail_type) {
 
 bool Parser::parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type) {
 
-    expr_type = the_expr_type;
+    expr_type the_expr_type;
 
     // ASSIGNMENT_STMT_TAIL -> := EXPR
     // PREDICT(:= EXPR) => {:=}
@@ -1280,7 +1294,7 @@ bool Parser::parse_procedure_call_stmt_tail() {
 
 bool Parser::parse_expr_list() {
 
-    expr_type = the_expr_type;
+    expr_type the_expr_type;
 
     // EXPR_LIST -> EXPR EXPR_LIST_HAT
     //           -> LAMBDA
@@ -1679,7 +1693,7 @@ bool Parser::parse_term(expr_type &term_type) {
 
                 if (term_prm_type == NO_T) {
 
-                    term_type == factor_type;
+                    term_type = factor_type;
                 } else if (factor_type == term_prm_type) {
 
                     term_type = factor_type;
@@ -1817,9 +1831,9 @@ bool Parser::parse_factor(expr_type &factor_type) {
     // match identifier
     if (word->get_token_type() == TOKEN_ID) {
 
-        if (is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
+        if (stab->is_decl(static_cast<IdToken *>(word)->get_attribute(), current_env)) {
 
-            factor_type = get_type(static_cast<IdToken *>(word)->get_attribute(), current_env);
+            factor_type = stab->get_type(static_cast<IdToken *>(word)->get_attribute(), current_env);
         } else {
 
             undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);
