@@ -68,6 +68,8 @@ class Parser {
       Token *word;
 
       Symbol_Table *stab;
+
+      string * left_side;
   
       // Print out a parse error message:  "Expected" expected,
       // "found", found.  This method should delete the string
@@ -82,8 +84,6 @@ class Parser {
 
       // Used in analysis for position of parameters
       int parm_pos;
-
-      string *expected;
 
       // Throws the type error
       void type_error(Token *where);

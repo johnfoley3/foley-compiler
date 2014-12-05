@@ -60,6 +60,10 @@ public:
      type == UNKNOWN_T to standard_type_type. */  
   void update_type (expr_type standard_type_type);
 
+  /* Iterate over symbol table, updating all entries with 
+     type == UNKNOWN_T to standard_type_type and their position. */ 
+  void update_type_with_position (expr_type standard_type_type, int &parm_pos);
+
   /* Find the first identifier in the symbol table with an unknown
      type, and set its parameter position.  Note that this needs to
      be called before update_type in order to correctly set 
