@@ -15,7 +15,7 @@ truc : truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
 
 # clean out all object files
 clean : 
-	rm -rf *.o *.h.gch main
+	rm -rf *.o *.h.gch truc
 
 token.o : token.cc token.h
 	g++ $(FLAGS) token.cc
