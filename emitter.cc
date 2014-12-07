@@ -15,7 +15,7 @@ Emitter::~Emitter() {
 string *Emitter::get_new_label() {
 
 	string *label = new string ("_L");
-	string *number = atos(label_num);
+	string *number = itos(label_num);
 	label_num++;
 	*label += *number;
 	delete number;
@@ -199,6 +199,7 @@ void Emitter::translate_and_emit (inst_type inst) {
 		cout << "halt";
 		break;
 	case NOINST:
+		break;
 	default:
 		cout << "BAD TrAL INSTRUCTION";
 		break;
