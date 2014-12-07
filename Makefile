@@ -9,7 +9,7 @@ FLAGS = -c -Wall -pedantic -Wno-delete-non-virtual-dtor
 truc : truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o\
 		symbol_table.o register.o register_allocator.o emitter.o
-	g++ -Wall -pedantic -o main truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
+	g++ -Wall -pedantic -o truc truc.cc parser.o scanner.o buffer.o token.o keywordtoken.o punctoken.o\
 		reloptoken.o addoptoken.o muloptoken.o idtoken.o numtoken.o eoftoken.o\
 		symbol_table.o register.o register_allocator.o emitter.o
 
