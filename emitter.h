@@ -29,9 +29,7 @@ typedef enum instruction_type {MOVE = 802,
 class Emitter {
 
 public:
-
 	
-
 	Emitter();
 	~Emitter();
 

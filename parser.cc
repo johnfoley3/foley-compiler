@@ -16,6 +16,9 @@ Parser::Parser(Scanner *s) {
     main_env = NULL;
     parm_pos = -1;
     left_side = NULL;
+
+    e = new Emitter();
+    ra = new Register_Allocator(e, stab);
 }
 
 Parser::~Parser() {
@@ -1025,6 +1028,8 @@ bool Parser::parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type) {
 
     expr_type the_expr_type;
 
+    Register *expr_reg;
+
     // ASSIGNMENT_STMT_TAIL -> := EXPR
     // PREDICT(:= EXPR) => {:=}
 
@@ -1036,7 +1041,7 @@ bool Parser::parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type) {
         delete word;
         word = lex->next_token();
 
-        if (parse_expr(the_expr_type)) {
+        if (parse_expr(the_expr_type, expr_reg)) {
 
             assignment_stmt_tail_type = the_expr_type;
 
@@ -1062,6 +1067,9 @@ bool Parser::parse_if_stmt() {
 
     expr_type the_expr_type;
 
+    /* Parse_expr will leave the register containing the value of the expression here */
+    Register *expr_reg;
+
     // IF_STMT -> if EXPR then BLOCK IF_STMT_HAT
     // PREDICT(if EXPR then BLOCK IF_STMT_HAT) => {if}
 
@@ -1073,12 +1081,19 @@ bool Parser::parse_if_stmt() {
         delete word;
         word = lex->next_token();
 
-        if (parse_expr(the_expr_type)) {
+        if (parse_expr(the_expr_type, expr_reg)) {
 
             if (the_expr_type != BOOL_T) {
 
                 type_error(word);
             }
+
+            // Code generation
+            string *if_false = e->get_new_label("if_false");
+            string *if_done = e->get_new_label("if_done");
+
+            e->emit_branch(BREZ, expr_reg, if_false);
+            ra->deallocate_register(expr_reg);
 
             if (word->get_token_type() == TOKEN_KEYWORD
                 && static_cast<KeywordToken *>(word)->get_attribute() == KW_THEN) {
@@ -1089,7 +1104,17 @@ bool Parser::parse_if_stmt() {
 
                 if (parse_block()) {
 
+                    // Code generation
+                    e->emit_branch(if_done);
+
+                    e->emit_label(if_false);
+                    delete if_false;
+
                     if (parse_if_stmt_hat()) {
+
+                        // Code Generation
+                        e->emit_label(if_done);
+                        delete if_done;
 
                         //successfully parsed if_stmt
                         return true;
@@ -1171,6 +1196,8 @@ bool Parser::parse_while_stmt() {
 
     expr_type the_expr_type;
 
+    Register *expr_reg;
+
     // WHILE_STMT -> while EXPR BLOCK
     // PREDICT(while EXPR BLOCK) => {while}
 
@@ -1182,7 +1209,7 @@ bool Parser::parse_while_stmt() {
         delete word;
         word = lex->next_token();
 
-        if (parse_expr(the_expr_type)) {
+        if (parse_expr(the_expr_type, expr_reg)) {
 
             if (the_expr_type != BOOL_T) {
 
@@ -1218,6 +1245,8 @@ bool Parser::parse_print_stmt() {
 
     expr_type the_expr_type;
 
+    Register *expr_reg;
+
     // PRINT_STMT -> print EXPR
     // PREDICT(print EXPR) => {print}
 
@@ -1229,7 +1258,7 @@ bool Parser::parse_print_stmt() {
         delete word;
         word = lex->next_token();
 
-        if (parse_expr(the_expr_type)) {
+        if (parse_expr(the_expr_type, expr_reg)) {
 
             if (the_expr_type != INT_T) {
 
@@ -1306,6 +1335,8 @@ bool Parser::parse_expr_list() {
 
     expr_type the_expr_type;
 
+    Register *expr_reg;
+
     // EXPR_LIST -> EXPR EXPR_LIST_HAT
     //           -> LAMBDA
     // PREDICT(EXPR EXPR_LIST_HAT) => {identifier, num, (, not, +, -}
@@ -1320,7 +1351,7 @@ bool Parser::parse_expr_list() {
         || (word->get_token_type() == TOKEN_ADDOP 
             && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
 
-        if (parse_expr(the_expr_type)) {
+        if (parse_expr(the_expr_type, expr_reg)) {
 
             printf("current env: %s\n", current_env->c_str());
             if (the_expr_type != stab->get_type(left_side, parm_pos)) {
@@ -1402,7 +1433,7 @@ bool Parser::parse_expr_list_hat() {
     return false;
 }
 
-bool Parser::parse_expr(expr_type &the_expr_type) {
+bool Parser::parse_expr(expr_type &the_expr_type, Register *&parent_reg) {
 
     expr_type simple_expr_type, expr_hat_type;
 
@@ -1573,9 +1604,13 @@ bool Parser::parse_expr_hat(expr_type &expr_hat_type) {
     return false;
 }
 
-bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
+bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type, Register *&parent_reg) {
 
     expr_type term_type, simple_expr_prm_type_1, addop_type;
+
+    // code generation variables
+    Register *term_reg;
+    addop_attr_type the_addop;
 
     // SIMPLE_EXPR_PRM -> addop TERM SIMPLE_EXPR_PRM
     //                 -> LAMBDA
@@ -1596,13 +1631,28 @@ bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
             type_error(word);
         }
 
+        // remember the addop for later
+        the_addop = static_cast<AddopToken *>(word)->get_attribute();
+
         // ADVANCE
         delete word;
         word = lex->next_token(); 
 
-        if (parse_term(term_type)) {
+        if (parse_term(term_type, term_reg)) {
 
-            if (parse_simple_expr_prm(simple_expr_prm_type_1)) {
+            // Code Generation
+            if (the_addop == ADDOP_SUB) {
+
+                e->emit_2addr(SUB, parent_reg, term_reg);
+            } else {
+
+                e->emit_2addr(ADD, parent_reg, term_reg);
+            }
+
+            // done with term_reg
+            ra->deallocate_register(term_reg);
+
+            if (parse_simple_expr_prm(simple_expr_prm_type_1, parent_reg)) {
 
                 if (simple_expr_prm_type_1 == NO_T) {
 
@@ -1664,9 +1714,11 @@ bool Parser::parse_simple_expr_prm(expr_type &simple_expr_prm_type) {
     return false;
 }
 
-bool Parser::parse_term(expr_type &term_type) {
+bool Parser::parse_term(expr_type &term_type, Register *&parent_reg) {
 
     expr_type factor_type, term_prm_type;
+
+    Register *factor_reg;
 
     // TERM -> FACTOR TERM_PRM
     // PREDICT(FACTOR TERM_PRM) => {identifier, num, (, +, -, not}
@@ -1683,9 +1735,9 @@ bool Parser::parse_term(expr_type &term_type) {
         || (word->get_token_type() == TOKEN_ADDOP 
             && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
 
-        if (parse_factor(factor_type)) {
+        if (parse_factor(factor_type, parent_reg)) {
 
-            if (parse_term_prm(term_prm_type)) {
+            if (parse_term_prm(term_prm_type, parent_reg)) {
 
                 if (term_prm_type == NO_T) {
 
@@ -1721,9 +1773,13 @@ bool Parser::parse_term(expr_type &term_type) {
     return false;
 }
 
-bool Parser::parse_term_prm(expr_type &term_prm_type) {
+bool Parser::parse_term_prm(expr_type &term_prm_type, Register *&parent_reg) {
 
     expr_type term_prm_type_1, factor_type, mulop_type;
+
+    Register *factor_reg;
+
+    mulop_attr_type mulop_type;
 
     // TERM_PRM -> mulop FACTOR TERM_PRM
     //          -> LAMBDA
@@ -1735,8 +1791,18 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
         if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL)
             || (static_cast<MulopToken *>(word)->get_attribute() == MULOP_DIV)) {
 
+            if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL) == MULOP_MUL) {
+
+                mulop_type = MULOP_MUL;
+            } else {
+
+                mulop_type = MULOP_DIV;
+            }
+
             mulop_type = INT_T;
         } else if (static_cast<MulopToken *>(word)->get_attribute() == MULOP_AND) {
+
+            mulop_type = MULOP_AND;
 
             mulop_type = BOOL_T;
         } else {
@@ -1748,9 +1814,22 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
         delete word;
         word = lex->next_token(); 
 
-        if (parse_factor(factor_type)) {
+        if (parse_factor(factor_type, factor_reg)) {
 
-            if (parse_term_prm(term_prm_type_1)) {
+            if (mulop_type == MULOP_AND) {
+
+                e->emit_2addr(AND, parent_reg, factor_reg);
+            } else if (mulop_type == MULOP_DIV) {
+
+                e->emit_2addr(DIV, parent_reg, factor_reg);
+            } else {
+
+                e->emit_2addr(MUL, parent_reg, factor_reg);
+            }
+
+            ra->deallocate_register(factor_reg);
+
+            if (parse_term_prm(term_prm_type_1, parent_reg)) {
 
                 if ((term_prm_type_1 == NO_T) && (mulop_type == factor_type)) {
 
@@ -1807,9 +1886,10 @@ bool Parser::parse_term_prm(expr_type &term_prm_type) {
     return false;
 }
 
-bool Parser::parse_factor(expr_type &factor_type) {
+bool Parser::parse_factor(expr_type &factor_type, Register *&parent_reg) {
 
     expr_type the_expr_type, factor_type_1;
+    addop_attr_type addop_type;
 
     // FACTOR -> identifier
     //        -> num
@@ -1832,6 +1912,10 @@ bool Parser::parse_factor(expr_type &factor_type) {
             undeclared_id_error(static_cast<IdToken *>(word)->get_attribute(), current_env);
         }
 
+        parent_reg = ra->allocate_register();
+        // code generation
+        e->emit_move(parent_reg, static_cast<IdToken *>(word)->get_attribute());
+
         // ADVANCE
         delete word;
         word = lex->next_token(); 
@@ -1843,6 +1927,10 @@ bool Parser::parse_factor(expr_type &factor_type) {
     } else if (word->get_token_type() == TOKEN_NUM) {
 
         factor_type = INT_T;
+
+        parent_reg = ra->allocate_register();
+        // code generation
+        e->emit_move(parent_reg, static_cast<NumToken *>(word)->get_attribute());
 
         // ADVANCE
         delete word;
@@ -1859,7 +1947,7 @@ bool Parser::parse_factor(expr_type &factor_type) {
         delete word;
         word = lex->next_token(); 
 
-        if (parse_expr(the_expr_type)) {
+        if (parse_expr(the_expr_type, parent_reg)) {
 
             if (word->get_token_type() == TOKEN_PUNC 
                 && static_cast<PuncToken *>(word)->get_attribute() == PUNC_CLOSE) {
@@ -1885,18 +1973,18 @@ bool Parser::parse_factor(expr_type &factor_type) {
             return false;
         }
     
-
     // match not
     } else if (word->get_token_type() == TOKEN_KEYWORD
         && static_cast<KeywordToken *>(word)->get_attribute() == KW_NOT) {
-
-
 
         // ADVANCE
         delete word;
         word = lex->next_token(); 
 
-        if (parse_factor(factor_type_1)) {
+        if (parse_factor(factor_type_1, parent_reg)) {
+
+            // code generation
+            e->emit_1addr(NOT, parent_reg);
 
             if (factor_type_1 == BOOL_T) {
 
@@ -1919,23 +2007,42 @@ bool Parser::parse_factor(expr_type &factor_type) {
         || (word->get_token_type() == TOKEN_ADDOP 
             && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
 
-            // ADVANCE
-        delete word;
-        word = lex->next_token(); 
+        // remember the operator for the cogen
+        if (word->get_token_type() == TOKEN_ADDOP 
+            && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_ADD) {
 
-        if (parse_factor(factor_type_1)) {
-
-            if (factor_type_1 == INT_T) {
-
-                factor_type = INT_T;
-            } else {
-
-                type_error(word);
-            }
-
-            return true;
+            addop_type = ADDOP_ADD;
         } else {
 
+            addop_type = ADDOP_SUB;
+        }
+
+        if (parse_sign()) {
+
+            if (parse_factor(factor_type_1, parent_reg)) {
+
+                if (addop_type == ADDOP_SUB) {
+
+                    // code generation
+                    e->emit_1addr(NEG, parent_reg);
+                }
+
+                if (factor_type_1 == INT_T) {
+
+                    factor_type = INT_T;
+                } else {
+
+                    type_error(word);
+                }
+
+                return true;
+            } else {
+
+                return false;
+            }
+        } else {
+
+            // failed to parse sign
             return false;
         }
     } else {

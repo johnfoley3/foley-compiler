@@ -14,6 +14,9 @@
 #include "scanner.h"
 
 #include "symbol_table.h"
+#include "emitter.h"
+#include "register.h"
+#include "register_allocator.h"
 
 #include <iostream>
 
@@ -51,13 +54,13 @@ class Parser {
       bool parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type);
       bool parse_procedure_call_stmt_tail();
       bool parse_if_stmt_hat();
-      bool parse_expr(expr_type &the_expr_type);
+      bool parse_expr(expr_type &the_expr_type, Register *&parent_reg);
       bool parse_expr_list();
       bool parse_expr_list_hat();
       bool parse_simple_expr(expr_type &simple_expr_type);
       bool parse_expr_hat(expr_type &expr_hat_type);
       bool parse_simple_expr_prm(expr_type &simple_expr_prm_type);
-      bool parse_term(expr_type &term_type);
+      bool parse_term(expr_type &term_type, Register *&term_reg);
       bool parse_term_prm(expr_type &term_prm_type);
       bool parse_factor(expr_type &factor_type);
       bool parse_sign();
@@ -84,6 +87,10 @@ class Parser {
 
       // Used in analysis for position of parameters
       int parm_pos;
+
+      Emitter *e;
+
+      Register_Allocator *ra;
 
       // Throws the type error
       void type_error(Token *where);
