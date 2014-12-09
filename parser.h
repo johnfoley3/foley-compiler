@@ -50,8 +50,8 @@ class Parser {
       bool parse_if_stmt();
       bool parse_while_stmt();
       bool parse_print_stmt();
-      bool parse_stmt_ass_proc_tail(expr_type &stmt_ass_proc_tail_type);
-      bool parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type);
+      bool parse_stmt_ass_proc_tail(expr_type &stmt_ass_proc_tail_type, Register *&parent_reg);
+      bool parse_assignment_stmt_tail(expr_type &assignment_stmt_tail_type, Register *&parent_reg);
       bool parse_procedure_call_stmt_tail();
       bool parse_if_stmt_hat();
       bool parse_expr(expr_type &the_expr_type, Register *&parent_reg);

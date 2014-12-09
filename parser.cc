@@ -960,7 +960,7 @@ bool Parser::parse_stmt() {
             }
 
             // code generation
-            e->emit_2addr(left_side, ass_reg);
+            e->emit_move(left_side, ass_reg);
             ra->deallocate_register(ass_reg);
 
             // successfully parsed stmt
@@ -1202,8 +1202,8 @@ bool Parser::parse_while_stmt() {
 
     Register *expr_reg;
 
-    String *while_begin = e->get_new_label("while_begin");
-    String *while_done = e->get_new_label("while_done");
+    string *while_begin = e->get_new_label("while_begin");
+    string *while_done = e->get_new_label("while_done");
 
     // WHILE_STMT -> while EXPR BLOCK
     // PREDICT(while EXPR BLOCK) => {while}
@@ -1216,7 +1216,7 @@ bool Parser::parse_while_stmt() {
         delete word;
         word = lex->next_token();
 
-        e->emit_label(while_true);
+        e->emit_label(while_begin);
 
         if (parse_expr(the_expr_type, expr_reg)) {
 
@@ -1225,14 +1225,14 @@ bool Parser::parse_while_stmt() {
                 type_error(word);
             }
 
-            e->emit_branch(BRPO, while_done);
-            e->emit_branch(BRNE, while_done);
+            e->emit_branch(BRPO, expr_reg, while_done);
+            e->emit_branch(BRNE, expr_reg, while_done);
             ra->deallocate_register(expr_reg);
 
 
             if (parse_block()) {
 
-                e->emit_branch(BRUN, while_begin);
+                e->emit_branch(while_begin);
                 e->emit_label(while_done);
                 delete while_done;
                 delete while_begin;
@@ -1475,9 +1475,9 @@ bool Parser::parse_expr(expr_type &the_expr_type, Register *&parent_reg) {
         || (word->get_token_type() == TOKEN_ADDOP 
             && static_cast<AddopToken *>(word)->get_attribute() == ADDOP_SUB)) {
 
-        if (parse_simple_expr(simple_expr_type)) {
+        if (parse_simple_expr(simple_expr_type, parent_reg)) {
 
-            if (parse_expr_hat(expr_hat_type)) {
+            if (parse_expr_hat(expr_hat_type, parent_reg)) {
 
                 // calculate the expr_type
                 if (expr_hat_type == NO_T) {
@@ -1595,8 +1595,8 @@ bool Parser::parse_expr_hat(expr_type &expr_hat_type, Register *&parent_reg) {
 
         if (parse_simple_expr(simple_expr_type, simple_expr_reg)) {
 
-            String *label = e->get_new_label();
-            String *label_done = e->get_new_label();
+            string *label = e->get_new_label();
+            string *label_done = e->get_new_label();
 
             // code generation; 0 = false; <>0 = true;
             e->emit_2addr(SUB, parent_reg, simple_expr_reg);
@@ -1604,9 +1604,9 @@ bool Parser::parse_expr_hat(expr_type &expr_hat_type, Register *&parent_reg) {
             if (relop_type == RELOP_EQ) {
 
                 // zero is true, so send us there
-                e->emit_branch(BREZ, label);
+                e->emit_branch(BREZ, parent_reg, label);
                 e->emit_move(parent_reg, 0);
-                e->emit_branch(BRUN, label_done);
+                e->emit_branch(label_done);
 
                 // is zero, so set to true
                 e->emit_label(label);
@@ -1618,28 +1618,28 @@ bool Parser::parse_expr_hat(expr_type &expr_hat_type, Register *&parent_reg) {
 
                 // positive is true
                 // ne and pos are false, so set to 0
-                e->emit_branch(BRPO, label_done);
+                e->emit_branch(BRPO, parent_reg, label_done);
                 e->emit_move(parent_reg, 0);
             } else if (relop_type == RELOP_GE) {
 
                 // positive and zero are true
                 // ne is false, so set to zero
-                e->emit_branch(BRPO, label_done);
-                e->emit_branch(BREZ, label_done);
+                e->emit_branch(BRPO, parent_reg, label_done);
+                e->emit_branch(BREZ, parent_reg, label_done);
                 e->emit_move(parent_reg, 0);
             } else if (relop_type == RELOP_LT) {
 
                 // negative is true
                 // pos and zero are false, so set to 0
-                e->emit_branch(BRNE, label_done);
+                e->emit_branch(BRNE, parent_reg, label_done);
                 e->emit_move(parent_reg, 0);
             } else {
 
                 // LE
                 // negative and zero are true
                 // pos is false
-                e->emit_branch(BRNE, label_done);
-                e->emit_branch(BREZ, label_done);
+                e->emit_branch(BRNE, parent_reg, label_done);
+                e->emit_branch(BREZ, parent_reg, label_done);
                 e->emit_move(parent_reg, 0);
             }
             e->emit_label(label_done);
@@ -1797,8 +1797,6 @@ bool Parser::parse_term(expr_type &term_type, Register *&parent_reg) {
 
     expr_type factor_type, term_prm_type;
 
-    Register *factor_reg;
-
     // TERM -> FACTOR TERM_PRM
     // PREDICT(FACTOR TERM_PRM) => {identifier, num, (, +, -, not}
 
@@ -1858,7 +1856,7 @@ bool Parser::parse_term_prm(expr_type &term_prm_type, Register *&parent_reg) {
 
     Register *factor_reg;
 
-    mulop_attr_type mulop_type;
+    mulop_attr_type the_mulop_type;
 
     // TERM_PRM -> mulop FACTOR TERM_PRM
     //          -> LAMBDA
@@ -1870,18 +1868,18 @@ bool Parser::parse_term_prm(expr_type &term_prm_type, Register *&parent_reg) {
         if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL)
             || (static_cast<MulopToken *>(word)->get_attribute() == MULOP_DIV)) {
 
-            if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL) {
+            if ((static_cast<MulopToken *>(word)->get_attribute() == MULOP_MUL)) {
 
-                mulop_type = MULOP_MUL;
+                the_mulop_type = MULOP_MUL;
             } else {
 
-                mulop_type = MULOP_DIV;
+                the_mulop_type = MULOP_DIV;
             }
 
             mulop_type = INT_T;
         } else if (static_cast<MulopToken *>(word)->get_attribute() == MULOP_AND) {
 
-            mulop_type = MULOP_AND;
+            the_mulop_type = MULOP_AND;
 
             mulop_type = BOOL_T;
         } else {
@@ -1895,10 +1893,10 @@ bool Parser::parse_term_prm(expr_type &term_prm_type, Register *&parent_reg) {
 
         if (parse_factor(factor_type, factor_reg)) {
 
-            if (mulop_type == MULOP_AND) {
+            if (the_mulop_type == MULOP_AND) {
 
                 e->emit_2addr(ADD, parent_reg, factor_reg);
-            } else if (mulop_type == MULOP_DIV) {
+            } else if (the_mulop_type == MULOP_DIV) {
 
                 e->emit_2addr(DIV, parent_reg, factor_reg);
             } else {
