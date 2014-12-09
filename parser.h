@@ -57,12 +57,12 @@ class Parser {
       bool parse_expr(expr_type &the_expr_type, Register *&parent_reg);
       bool parse_expr_list();
       bool parse_expr_list_hat();
-      bool parse_simple_expr(expr_type &simple_expr_type);
-      bool parse_expr_hat(expr_type &expr_hat_type);
-      bool parse_simple_expr_prm(expr_type &simple_expr_prm_type);
+      bool parse_simple_expr(expr_type &simple_expr_type, Register *&parent_reg);
+      bool parse_expr_hat(expr_type &expr_hat_type, Register *&parent_reg);
+      bool parse_simple_expr_prm(expr_type &simple_expr_prm_type, Register *&parent_reg);
       bool parse_term(expr_type &term_type, Register *&term_reg);
-      bool parse_term_prm(expr_type &term_prm_type);
-      bool parse_factor(expr_type &factor_type);
+      bool parse_term_prm(expr_type &term_prm_type, Register *&parent_reg);
+      bool parse_factor(expr_type &factor_type, Register *&parent_reg);
       bool parse_sign();
   
       // The lexical analyzer
